@@ -19,10 +19,6 @@ brew "gnu-tar"
 brew "go"
 brew "node"
 brew "tree-sitter-cli"
-cask "dotnet-sdk"
-cask "dotnet-sdk@8"
-cask "dotnet-sdk@9"
-cask "git-credential-manager"
 
 # https://formulae.brew.sh/cask/wezterm
 # https://formulae.brew.sh/cask/font-meslo-for-powerlevel10k
