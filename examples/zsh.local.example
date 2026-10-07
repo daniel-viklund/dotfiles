@@ -1,0 +1,5 @@
+# Copy to ~/.config/zsh/local.zsh and chmod 600 that file.
+# Store credentials, internal host aliases, and machine-specific overrides here.
+# This file is sourced at the end of ~/.zshrc.
+# export EXAMPLE_API_CLIENT_ID="..."
+# export EXAMPLE_API_CLIENT_SECRET="..."

@@ -1,0 +1,66 @@
+vim.pack.add({
+  "https://github.com/nvim-neotest/nvim-nio",
+  "https://github.com/nvim-lua/plenary.nvim",
+  "https://github.com/nvim-treesitter/nvim-treesitter",
+  "https://github.com/nvim-neotest/neotest",
+  "https://github.com/nvim-neotest/neotest-python",
+})
+
+-- Also recognize small unittest projects without pyproject.toml/setup.cfg.
+-- The adapter uses this helper for both discovery and Python environment lookup.
+local python = require("neotest-python.base")
+python.get_root = require("neotest.lib").files.match_root_pattern(
+  "pyproject.toml", "setup.cfg", "mypy.ini", "pytest.ini", "setup.py", "requirements.txt", ".git"
+)
+
+local neotest = require("neotest")
+local adapter = require("neotest-python")({ dap = { justMyCode = false } })
+local build_spec = adapter.build_spec
+adapter.build_spec = function(args)
+  local position = args.tree:data()
+  local root = python.get_root(position.path) or vim.fn.getcwd()
+  -- unittest's recursive discovery skips directories without __init__.py.
+  -- Let Neotest run its discovered files individually in that case.
+  if position.type == "dir" and python.get_runner(python.get_python_command(root)) == "unittest" then
+    return nil
+  end
+  local spec = build_spec(args)
+  spec.cwd = root
+  if spec.strategy then spec.strategy.cwd = root end
+  return spec
+end
+
+neotest.setup({
+  -- Detect the project's virtualenv and use pytest when installed, else unittest.
+  adapters = { adapter },
+  discovery = {
+    filter_dir = function(name)
+      return not vim.tbl_contains({ ".venv", "venv", "__pycache__", "node_modules" }, name)
+    end,
+  },
+  summary = { open = "botright vsplit | vertical resize 45" },
+  output = { open_on_run = false },
+  output_panel = { open = "botright split | resize 12" },
+  floating = { border = "rounded" },
+})
+
+-- Tests share the project prefix; uppercase X avoids the project stop mapping.
+local mappings = {
+  { "pn", function() neotest.run.run() end, "Run nearest test" },
+  { "pf", function() neotest.run.run(vim.fn.expand("%:p")) end, "Run test file" },
+  { "pt", function()
+    neotest.run.run(python.get_root(vim.fn.expand("%:p")) or vim.fn.getcwd())
+    neotest.summary.open()
+  end, "Run project tests" },
+  { "pl", function() neotest.run.run_last() end, "Rerun last tests" },
+  { "ps", function() neotest.summary.toggle() end, "Toggle test summary" },
+  { "pX", function() neotest.run.stop() end, "Stop nearest test run" },
+  { "pd", function() neotest.run.run({ strategy = "dap" }) end, "Debug nearest test" },
+}
+for _, mapping in ipairs(mappings) do
+  vim.keymap.set("n", "<leader>" .. mapping[1], mapping[2], { desc = mapping[3] })
+end
+vim.keymap.set("n", "]T", function() neotest.jump.next({ status = "failed" }) end,
+  { desc = "Next failed test" })
+vim.keymap.set("n", "[T", function() neotest.jump.prev({ status = "failed" }) end,
+  { desc = "Previous failed test" })
