@@ -1,84 +1,51 @@
 # Dotfiles
 
-Daniel's Zsh/Powerlevel10k, Git, Neovim (`nvim-scratch`), WezTerm, tmux, and
-Hammerspoon setup. Edit the files in `packages/`, or through their usual paths
-in your home directory; the installed paths are symlinks into this repository.
-Commit changes here. Kitty and the older `~/.config/nvim` stay separate.
+Zsh/Powerlevel10k, Git, Neovim (`nvim-scratch`), WezTerm, tmux, and Hammerspoon.
+GNU Stow links `packages/` into your home directory. Edit configs at their usual
+paths and commit changes in this repo.
 
-## Install on this Mac
+## Setup
 
-```sh
-./install.sh --dry-run
-./install.sh
-```
-
-Requires Python 3. The installer backs up existing destinations before linking
-them, including the complete original configuration repositories and their Git
-histories. Re-running it leaves correct links alone. It preserves existing tmux
-plugins and Hammerspoon local settings in ignored paths. It does not install
-packages, launch apps, or fetch plugins.
-
-Backups are under `~/.local/state/dotfiles/backups/`, in a private directory per
-installation. The installer prints the exact `manifest.json` path. To undo:
+Install Homebrew, then clone to `~/Documents/Github/daniel-viklund/dotfiles`.
+From the repo:
 
 ```sh
-./install.sh --restore /path/to/backup/manifest.json --dry-run
-./install.sh --restore /path/to/backup/manifest.json
+brew install stow
+stow -n -v -d packages -t "$HOME" zsh git neovim tmux wezterm hammerspoon
+stow -d packages -t "$HOME" zsh git neovim tmux wezterm hammerspoon
 ```
 
-Restoration refuses to overwrite destinations that no longer point to this
-repo. Changes made in the dotfiles repository remain there after restoration.
-Backups may contain the original shell credentials; keep them private.
+The first Stow command previews changes. If existing configs conflict, move
+them to a backup first; Stow does not back them up. Start a new terminal after
+setup. Re-run the last command when adding configs. To remove links, use the
+same command with `-D`; files in this repo remain intact.
 
-## Fresh Mac
+On a fresh Mac, `brew bundle --file=Brewfile` installs the tools and apps too.
+It is unnecessary on the current Mac, where WezTerm and the Meslo font were
+installed outside Homebrew and could conflict with a bundle installation.
 
-1. Install Apple's command line tools and Homebrew. Clone this repository under
-   `~/Documents/Github/daniel-viklund/dotfiles` so the existing personal Git
-   identity rule applies.
-2. Run `brew bundle --file=Brewfile` to install the listed tools. The file records
-   desired dependencies rather than exact installed versions. WezTerm and the
-   Meslo font on the original Mac were installed outside Homebrew; a bundle run
-   there may encounter existing app/font files. No bundle install is needed
-   merely to activate these dotfiles on the original Mac.
-3. Run `./install.sh`. Start a new terminal afterward.
-4. Install Rust using rustup if needed. For the editor's complete language-tool
-   setup, read `packages/neovim/.config/nvim-scratch/readme.md` and its existing
-   macOS/Windows bootstrap scripts. Those scripts can install or upgrade tools.
-5. On a fresh machine, install TPM:
+## Private settings
 
-   ```sh
-   git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm
-   ```
+- `~/.config/zsh/local.zsh`: credentials, work helpers, and machine overrides.
+  Keep it outside Git with permissions `600`; an example is in `examples/`.
+- `~/.hammerspoon/local.lua`: local app shortcuts, ignored by Git. Start from
+  `local.example.lua` in that directory.
+- SSH keys and login sessions stay outside this repo. Git's identity files
+  contain personal/work email addresses and refer to your existing SSH keys.
 
-   Start tmux, then press `Ctrl-a`, followed by capital `I` to install plugins.
-6. Launch Hammerspoon and grant its macOS Accessibility permission. Copy
-   `.hammerspoon/local.example.lua` to `.hammerspoon/local.lua` if you want local
-   app shortcuts.
-7. Supply local secrets and SSH keys separately, and sign into GitHub/Azure as
-   needed. Keys and login sessions are not part of this repo.
+Downloaded tmux plugins, Hammerspoon Spoons, and local settings are ignored by
+Git. Git ignores control commits; Stow manages links to the package contents.
 
-## Local settings and credentials
+## Fresh-machine extras
 
-`~/.config/zsh/local.zsh` holds the original work API credentials, helper
-functions, and internal SSH alias on this Mac. It is outside this repository
-and is loaded by `.zshrc`. For another machine, start with
-`examples/zsh.local.example` and transfer required private settings securely.
-Use permissions `600` on the file. The work API helpers require `jq`.
+- Install TPM with `git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm`,
+  then press `Ctrl-a`, followed by capital `I`, inside tmux to install plugins.
+- Launch Hammerspoon and grant macOS Accessibility permission.
+- See [Neovim's README](packages/neovim/.config/nvim-scratch/readme.md) for its
+  language tools and existing macOS/Windows bootstrap scripts.
+- Transfer required private settings and SSH keys separately.
 
-Hammerspoon's `local.lua`, its downloaded Spoons, tmux plugins, logs, and backups
-are ignored. Neovim's `windows-path.txt` is machine-generated and ignored.
-Neovim's plugin lockfile is tracked; sessions and installed editor plugins live
-outside the repo. `.p10k.zsh` is tracked because it is the prompt configuration.
-
-Git retains the original personal/work identities and folder-based rules, with
-an explicit personal rule for this repository through its clone location.
-The identity files contain email addresses and refer to `~/.ssh/id_personal`
-and `~/.ssh/id_work`; the keys themselves are not included. Review identities
-and machine paths before sharing the repo or using it on another machine.
-
-## Migration
-
-`migration-sources.json` records original remotes, revision IDs, and working
-tree status. This repo starts with a snapshot of the current files, including
-uncommitted Neovim work. Old histories are retained in the local backups rather
-than imported into this repository. No remote is created automatically.
+The original configs and Git histories are preserved on this Mac under
+`~/.local/state/dotfiles/backups/20261007-134101-3bc4e68a/`, along with the
+original recovery script and migration notes. Keep this backup private.
+Kitty and the older `~/.config/nvim` remain separate.

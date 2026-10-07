@@ -7,6 +7,7 @@ brew "neovim"
 brew "powerlevel10k"
 brew "python@3.13"
 brew "ripgrep"
+brew "stow"
 brew "tmux"
 brew "zoxide"
 
