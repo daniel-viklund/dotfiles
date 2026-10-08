@@ -22,16 +22,57 @@ vim.diagnostic.config({
 })
 
 -- Server-specific configuration
+vim.lsp.config("vtsls", {
+    settings = {
+        typescript = {
+            tsserver = {
+                experimental = {
+                    enableProjectDiagnostics = true,
+                },
+            },
+        },
+    },
+})
+
+vim.lsp.config("rust_analyzer", {
+    settings = {
+        ["rust-analyzer"] = {
+            checkOnSave = true,
+            check = {
+                command = "check",
+                workspace = true,
+            },
+        },
+    },
+})
+
+vim.lsp.config("gopls", {
+    settings = {
+        gopls = {
+            expandWorkspaceToModule = true,
+        },
+    },
+})
+
 vim.lsp.config("basedpyright", {
+    -- Push workspace results so unopened files reach vim.diagnostic/Telescope
+    -- without requiring a separate workspace/diagnostic pull request.
+    init_options = {
+        disablePullDiagnostics = true,
+    },
     settings = {
         basedpyright = {
             analysis = {
+                diagnosticMode = "workspace",
                 -- Check types without requiring annotations throughout untyped code.
                 typeCheckingMode = "standard",
             },
         },
     },
 })
+
+-- clangd reports source diagnostics for open files. Background indexing does
+-- not publish project-wide diagnostics; use :CMakeDiagnostics[!] for build output.
 
 vim.lsp.config("lua_ls", {
     settings = {
@@ -84,7 +125,9 @@ vim.api.nvim_create_autocmd("LspAttach", {
         end
 
         -- Navigation
-        map("gd", vim.lsp.buf.definition, "Goto definition")
+        map("gd", function()
+            require("telescope.builtin").lsp_definitions()
+        end, "Goto definition")
         map("gD", vim.lsp.buf.declaration, "Goto declaration")
         map("gi", vim.lsp.buf.implementation, "Goto implementation")
         map("gr", function()

@@ -36,6 +36,53 @@ To disable a plugin, rename its file from `.lua` to `.lua.disabled` and restart.
 Snacks is already disabled this way. To enable it, rename `snacks.lua.disabled`
 back to `snacks.lua`. Disabled plugins stay installed and in the lockfile.
 
+## Diagnostics
+
+`Space sd` searches diagnostics for the current file; `Space sD` searches all
+reported diagnostics, with code previews. Type to filter and press `Enter` to
+jump to a result. `Space le` shows diagnostics on the current line.
+
+Workspace diagnostics are configured in `lua/config/plugins/lsp.lua`:
+
+- Python: basedpyright checks the workspace and pushes results for unopened files,
+  respecting project include/exclude settings. Pull diagnostics are disabled in
+  its initialization options so the picker does not need to request a scan.
+- TypeScript/JavaScript: vtsls enables experimental project-wide error reporting.
+- Rust: rust-analyzer runs `cargo check --workspace` on save.
+- Go: gopls diagnoses workspace packages, expanding to the containing module.
+- C/C++: clangd reports source diagnostics for open files. Its background index
+  does not provide a whole-project diagnostic scan; CMake builds can publish
+  compiler errors and warnings using the commands below.
+
+Open a source file to start its language server and allow analysis to finish
+before searching. Project-wide checking can use more CPU and memory on large
+projects. The picker displays reported results; opening it does not start a scan.
+
+### CMake project diagnostics
+
+`Space sc` prompts for an already configured CMake build directory, runs
+`cmake --build` asynchronously, and publishes compiler diagnostics for
+`Space sd` / `Space sD`. It defaults to `build/` under the working directory
+(or the working directory itself if it contains `CMakeCache.txt`) and remembers
+the last selected directory for the session. Save your files before building.
+
+- `:CMakeDiagnostics [build-directory]` runs an incremental build.
+- `:CMakeDiagnostics! [build-directory]` cleans build outputs first, then rebuilds
+  the default targets so unchanged sources are checked too.
+- `:CMakeDiagnosticsLog` shows the latest build output, including linker or
+  configuration errors that cannot be attached to a source location.
+
+Each run replaces the previous CMake diagnostics for that build directory;
+incremental builds report only what was rebuilt. Clangd diagnostics are retained
+separately. Builds use the configured toolchain and default targets and can stop
+on compiler errors; targets excluded from the default build are not checked.
+This compiles the project and does not run its tests.
+
+Your `compile_commands.json` supplies clangd with compilation flags; it does not
+trigger diagnostics for unopened files. Continue generating it as usual. The
+CMake diagnostic command uses the existing build configuration and does not
+reconfigure the project or change compiler warning flags.
+
 ## File managers
 
 Press `Space e` to try Neo-tree in the current editor window. It fills the screen
