@@ -6,6 +6,7 @@ vim.pack.add({
 -- Diagnostics
 vim.diagnostic.config({
     severity_sort = true,
+    update_in_insert = false,
 
     float = {
         border = "rounded",
@@ -15,13 +16,23 @@ vim.diagnostic.config({
     underline = true,
     signs = true,
 
-    virtual_text = {
-        spacing = 2,
-        source = "if_many",
-    },
+    -- Keep code readable; inspect messages in a float or with [d / ]d.
+    virtual_text = false,
+    virtual_lines = false,
 })
 
 -- Server-specific configuration
+vim.lsp.config("basedpyright", {
+    settings = {
+        basedpyright = {
+            analysis = {
+                -- Check types without requiring annotations throughout untyped code.
+                typeCheckingMode = "standard",
+            },
+        },
+    },
+})
+
 vim.lsp.config("lua_ls", {
     settings = {
         Lua = {
@@ -93,6 +104,10 @@ vim.api.nvim_create_autocmd("LspAttach", {
         map("<leader>lw", vim.lsp.buf.workspace_symbol, "Workspace symbols")
 
         -- Diagnostics
+        map("<leader>le", function()
+            vim.diagnostic.open_float({ scope = "line" })
+        end, "Line diagnostics")
+
         map("[d", function()
             vim.diagnostic.jump({
                 count = -1,
