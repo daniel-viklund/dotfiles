@@ -36,6 +36,17 @@ To disable a plugin, rename its file from `.lua` to `.lua.disabled` and restart.
 Snacks is already disabled this way. To enable it, rename `snacks.lua.disabled`
 back to `snacks.lua`. Disabled plugins stay installed and in the lockfile.
 
+## File managers
+
+Press `Space e` to try Neo-tree in the current editor window. It fills the screen
+when there are no splits. `Enter` expands or collapses folders; on a file, it
+opens the file in place of the tree. `q` closes the tree, `Backspace` goes up a
+directory, and `?` shows its keybindings. The tree uses the editor background.
+
+Oil remains on `-` and still handles opening directories directly. Configure the
+trial in `lua/config/plugins/neo-tree.lua`; rename that file to
+`neo-tree.lua.disabled` and restart to disable it.
+
 ## Sessions
 
 [AutoSession](https://github.com/rmagatti/auto-session) automatically saves your
