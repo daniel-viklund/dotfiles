@@ -2,7 +2,12 @@ vim.pack.add({
   { src = "https://github.com/rose-pine/neovim", name = "rose-pine" },
 })
 
-require("rose-pine").setup()
+require("rose-pine").setup({
+  styles = {
+    -- Let the terminal's opacity and blur show through.
+    transparency = true,
+  },
+})
 vim.cmd("colorscheme rose-pine")
 
 -- Keep hover, signature help, and completion surfaces on the editor background.
