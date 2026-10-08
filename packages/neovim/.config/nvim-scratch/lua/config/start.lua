@@ -1,4 +1,5 @@
 -- A decorative start screen, without another dashboard plugin.
+vim.opt.shortmess:append("I") -- Suppress Neovim's built-in welcome screen.
 local group = vim.api.nvim_create_augroup("MinimalStart", { clear = true })
 local stdin = false
 local ready = false
@@ -18,12 +19,7 @@ local function show_if_empty()
     return
   end
 
-  -- Hidden files and unnamed drafts still count as open file buffers.
-  for _, other in ipairs(vim.api.nvim_list_bufs()) do
-    if other ~= buf and vim.bo[other].buflisted and vim.bo[other].buftype == "" then
-      return
-    end
-  end
+  -- Restored hidden files should not prevent artwork in an empty window.
   if vim.api.nvim_win_get_config(0).relative ~= "" then
     return
   end
@@ -101,9 +97,9 @@ vim.api.nvim_create_autocmd("VimEnter", {
   end,
 })
 
--- Oil and :bdelete may create an empty buffer. Wait for their transitions
--- to finish before checking whether the home screen should return.
-vim.api.nvim_create_autocmd({ "BufEnter", "BufDelete", "BufWipeout" }, {
+-- Session restore, Oil, and :bdelete may leave an empty window. Wait for their
+-- transitions to finish before checking whether the home screen should return.
+vim.api.nvim_create_autocmd({ "SessionLoadPost", "BufEnter", "BufDelete", "BufWipeout" }, {
   group = group,
   callback = function()
     if ready and vim.v.exiting == vim.NIL then
