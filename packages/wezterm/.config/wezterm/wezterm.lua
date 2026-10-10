@@ -193,6 +193,7 @@ config.keys = {
   { key = 'x', mods = 'SUPER', action = wezterm.action.SendString '\x01x' },
   { key = 'c', mods = 'SUPER', action = wezterm.action.SendString '\x01c' },
   { key = 's', mods = 'SUPER', action = wezterm.action.SendString '\x01s' },
+  { key = '[', mods = 'SUPER', action = wezterm.action.SendString '\x01[' },
 
   -- Select tmux windows by sending Ctrl+a followed by the window number.
   { key = '1', mods = tab_mod, action = wezterm.action.SendString '\x011' },
