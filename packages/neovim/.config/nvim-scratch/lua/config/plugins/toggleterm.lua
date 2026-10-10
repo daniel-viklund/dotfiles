@@ -18,21 +18,6 @@ require("toggleterm").setup({
   },
 })
 
--- Terminal mode mappings
-vim.api.nvim_create_autocmd("TermOpen", {
-  pattern = { "term://*#toggleterm#*", "term://*::toggleterm::*" },
-  callback = function()
-    local opts = { buffer = 0 }
-
-    vim.keymap.set("t", "jk", [[<C-\><C-n>]], opts)
-
-    vim.keymap.set("t", "<C-h>", [[<Cmd>wincmd h<CR>]], opts)
-    vim.keymap.set("t", "<C-j>", [[<Cmd>wincmd j<CR>]], opts)
-    vim.keymap.set("t", "<C-k>", [[<Cmd>wincmd k<CR>]], opts)
-    vim.keymap.set("t", "<C-l>", [[<Cmd>wincmd l<CR>]], opts)
-  end,
-})
-
 -- Numbered terminals
 vim.keymap.set("n", "<leader>t1", "<cmd>1ToggleTerm<CR>", {
   desc = "Terminal 1",
@@ -51,7 +36,7 @@ require("config.runner").setup()
 
 -- Remember the visible set in each tab, including finished project output.
 local hidden_terminals = {}
-vim.keymap.set("n", "<leader>tt", function()
+local function toggle_terminals()
   local api = vim.api
   local tab = api.nvim_get_current_tabpage()
   local candidates = require("toggleterm.terminal").get_all(true)
@@ -73,17 +58,44 @@ vim.keymap.set("n", "<leader>tt", function()
     for _, term in ipairs(visible) do term:close() end
   else
     local window = api.nvim_get_current_win()
+    local restored = false
     for _, term in ipairs(hidden_terminals[tab] or {}) do
       -- Exited shells or replaced project jobs must not be launched again.
       if term.bufnr and api.nvim_buf_is_valid(term.bufnr) then
         term:open()
+        restored = true
       end
     end
     hidden_terminals[tab] = nil
+    if not restored then
+      vim.cmd("1ToggleTerm")
+      return
+    end
     if api.nvim_win_is_valid(window) then api.nvim_set_current_win(window) end
     vim.cmd.stopinsert()
   end
-end, { desc = "Toggle visible terminals" })
+end
+
+vim.keymap.set("n", [[<C-\>]], toggle_terminals, { desc = "Toggle terminals" })
+
+-- Terminal mode mappings stay local so other TUIs receive their own keys.
+vim.api.nvim_create_autocmd("TermOpen", {
+  pattern = { "term://*#toggleterm#*", "term://*::toggleterm::*" },
+  callback = function()
+    local opts = { buffer = 0 }
+
+    vim.keymap.set("t", [[<C-\>]], toggle_terminals, {
+      buffer = 0,
+      desc = "Toggle terminals",
+    })
+    vim.keymap.set("t", "jk", [[<C-\><C-n>]], opts)
+
+    vim.keymap.set("t", "<C-h>", [[<Cmd>wincmd h<CR>]], opts)
+    vim.keymap.set("t", "<C-j>", [[<Cmd>wincmd j<CR>]], opts)
+    vim.keymap.set("t", "<C-k>", [[<Cmd>wincmd k<CR>]], opts)
+    vim.keymap.set("t", "<C-l>", [[<Cmd>wincmd l<CR>]], opts)
+  end,
+})
 
 -- Create a fresh terminal
 vim.keymap.set("n", "<leader>tn", function()

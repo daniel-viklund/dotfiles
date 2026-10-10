@@ -37,6 +37,31 @@ local function main()
   vim.pack.add = pack_add
   runner = require("config.runner")
 
+  -- The toggle creates terminal 1 on first use, then preserves its running shell.
+  local toggle_all = fn.maparg([[<C-\>]], "n", false, true).callback
+  assert(fn.maparg("<leader>tt", "n") == "", "Old terminal toggle is still mapped")
+  local original_shell = vim.o.shell
+  vim.o.shell = "/bin/sh"
+  toggle_all()
+  local first = assert(require("toggleterm.terminal").get(1, true))
+  assert(first:is_open(), "First toggle did not open terminal 1")
+  local first_job = first.job_id
+  local toggle_from_terminal = fn.maparg([[<C-\>]], "t", false, true).callback
+  assert(toggle_from_terminal, "Terminal mode toggle is missing")
+  toggle_from_terminal()
+  assert(not first:is_open(), "Terminal mode toggle did not hide terminal 1")
+  toggle_all()
+  assert(first:is_open() and first.job_id == first_job, "Toggle did not restore the same shell")
+  toggle_all()
+  first:shutdown()
+  toggle_all()
+  local replacement = assert(require("toggleterm.terminal").get(1, true))
+  assert(replacement:is_open() and replacement.job_id ~= first_job,
+    "Toggle did not replace an exited hidden shell")
+  replacement:shutdown()
+  vim.o.shell = original_shell
+  vim.cmd.stopinsert()
+
   local project = temporary .. "/project"
   local other = temporary .. "/other"
   fn.mkdir(temporary .. "/.git", "p") -- An ancestor Git root must not override the launch directory.
@@ -154,7 +179,6 @@ while True:
   shell:open()
   local shell_job = shell.job_id
   local project_term = runner.terminal()
-  local toggle_all = fn.maparg("<leader>tt", "n", false, true).callback
   api.nvim_win_set_height(shell.window, 2)
   toggle_all()
   assert(not shell:is_open() and not project_term:is_open(), "Did not hide both terminals")

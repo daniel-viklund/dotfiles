@@ -186,6 +186,10 @@ output and returns focus to your source window. Navigate to the terminal with
 your window mappings and press `i` for interactive input; `jk` returns to Normal
 mode. Opening hidden output with `Space t4` also focuses the terminal.
 
+`Ctrl-\` hides/restores the visible terminals together, including build/run
+output, from Normal mode or inside ToggleTerm. If there is nothing to restore,
+it opens terminal 1.
+
 Commands run through Neovim's `shell` using files on disk, so save your changes
 first. Build and run are separate processes: put shared environment setup in
 both commands or in a script. Commands should stay in the foreground so the
