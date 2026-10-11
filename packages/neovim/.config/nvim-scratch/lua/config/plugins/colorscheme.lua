@@ -7,6 +7,11 @@ require("rose-pine").setup({
     -- Let the terminal's opacity and blur show through.
     transparency = true,
   },
+  highlight_groups = {
+    -- Increase the original lavender tint from 15% to 30%, keeping syntax colors.
+    Visual = { bg = "iris", blend = 30, inherit = false },
+    VisualNOS = { link = "Visual", inherit = false },
+  },
 })
 vim.cmd("colorscheme rose-pine")
 
