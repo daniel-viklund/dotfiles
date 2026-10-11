@@ -59,11 +59,16 @@ local function toggle_terminals()
   else
     local window = api.nvim_get_current_win()
     local restored = false
+    local interactive
     for _, term in ipairs(hidden_terminals[tab] or {}) do
       -- Exited shells or replaced project jobs must not be launched again.
       if term.bufnr and api.nvim_buf_is_valid(term.bufnr) then
         term:open()
         restored = true
+        if not interactive and not require("config.runner").reserves(term.id)
+          and term.job_id and vim.fn.jobwait({ term.job_id }, 0)[1] == -1 then
+          interactive = term
+        end
       end
     end
     hidden_terminals[tab] = nil
@@ -71,8 +76,16 @@ local function toggle_terminals()
       vim.cmd("1ToggleTerm")
       return
     end
-    if api.nvim_win_is_valid(window) then api.nvim_set_current_win(window) end
-    vim.cmd.stopinsert()
+    local target = interactive and interactive.window or window
+    if api.nvim_win_is_valid(target) then
+      api.nvim_set_current_win(target)
+      -- Apply after ToggleTerm's scheduled restoration of each terminal's mode.
+      vim.schedule(function()
+        if api.nvim_get_current_win() == target then
+          vim.cmd(interactive and "startinsert" or "stopinsert")
+        end
+      end)
+    end
   end
 end
 

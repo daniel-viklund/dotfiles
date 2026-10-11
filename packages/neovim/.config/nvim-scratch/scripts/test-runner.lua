@@ -52,6 +52,7 @@ local function main()
   assert(not first:is_open(), "Terminal mode toggle did not hide terminal 1")
   toggle_all()
   assert(first:is_open() and first.job_id == first_job, "Toggle did not restore the same shell")
+  assert(api.nvim_get_current_win() == first.window, "Restored shell did not receive focus")
   toggle_all()
   first:shutdown()
   toggle_all()
@@ -170,6 +171,12 @@ while True:
   api.nvim_set_current_win(source_window)
   vim.cmd.stopinsert()
 
+  -- Restoring only project output keeps focus in the editor.
+  toggle_all()
+  toggle_all()
+  assert(runner.terminal():is_open(), "Project output was not restored")
+  assert(api.nvim_get_current_win() == source_window, "Project-only toggle stole editor focus")
+
   -- Hide/restore shells together with finished project output, without rerunning either.
   local terminals = require("toggleterm.terminal")
   local shell = terminals.Terminal:new({ count = 1, cmd = "cat" })
@@ -185,6 +192,7 @@ while True:
   assert(vim.uv.kill(fn.jobpid(shell_job), 0) == 0, "Hiding stopped the shell")
   toggle_all()
   assert(shell:is_open() and project_term:is_open(), "Did not restore both terminals")
+  assert(api.nvim_get_current_win() == shell.window, "Mixed restore did not focus the shell")
   assert(api.nvim_win_get_height(shell.window) == 15, "Shell retained its compressed height")
   assert(api.nvim_win_get_height(project_term.window) == 15, "Project retained its compressed height")
   assert(not hidden:is_open(), "Restored a terminal that was already hidden")
