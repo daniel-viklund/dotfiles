@@ -36,6 +36,22 @@ To disable a plugin, rename its file from `.lua` to `.lua.disabled` and restart.
 Snacks is already disabled this way. To enable it, rename `snacks.lua.disabled`
 back to `snacks.lua`. Disabled plugins stay installed and in the lockfile.
 
+## Window and tmux pane navigation
+
+`Ctrl-h/j/k/l` moves left/down/up/right through Neovim windows, then into an
+adjacent tmux pane at the edge. The same keys work in ToggleTerm and in tmux
+shell panes, without a prefix. Outside tmux they still navigate Neovim windows.
+Editor navigation uses Normal mode; Telescope and other TUIs keep their own
+input mappings. `Ctrl-\` remains the terminal toggle.
+
+[vim-tmux-navigator](https://github.com/christoomey/vim-tmux-navigator) is
+installed on both sides: `vim.pack` for Neovim and TPM for tmux. On a fresh
+machine, restart Neovim and use `Ctrl-a`, then capital `I`, to install tmux
+plugins. Reload tmux configuration with `Ctrl-a`, then `r`.
+
+In a tmux shell, `Ctrl-l` now navigates right; use `Ctrl-a`, then `Ctrl-l`,
+to clear the screen. Shells also give up `Ctrl-h/j/k` to pane navigation.
+
 ## Diagnostics
 
 `Space sd` searches diagnostics for the current file; `Space sD` searches all

@@ -6,15 +6,15 @@ vim.keymap.set("i", "jk", "<Esc>")
 vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>", {
   desc = "Clear search highlight",
 })
-vim.keymap.set("n", "<C-h>", "<C-w>h", {
-  desc = "Move to left window",
+vim.keymap.set("n", "<C-h>", "<cmd>TmuxNavigateLeft<CR>", {
+  desc = "Move to left window or tmux pane",
 })
-vim.keymap.set("n", "<C-j>", "<C-w>j", {
-  desc = "Move to lower window",
+vim.keymap.set("n", "<C-j>", "<cmd>TmuxNavigateDown<CR>", {
+  desc = "Move to lower window or tmux pane",
 })
-vim.keymap.set("n", "<C-k>", "<C-w>k", {
-  desc = "Move to upper window",
+vim.keymap.set("n", "<C-k>", "<cmd>TmuxNavigateUp<CR>", {
+  desc = "Move to upper window or tmux pane",
 })
-vim.keymap.set("n", "<C-l>", "<C-w>l", {
-  desc = "Move to right window",
+vim.keymap.set("n", "<C-l>", "<cmd>TmuxNavigateRight<CR>", {
+  desc = "Move to right window or tmux pane",
 })
