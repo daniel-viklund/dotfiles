@@ -16,8 +16,7 @@ vim.diagnostic.config({
     underline = true,
     signs = true,
 
-    -- Keep code readable; inspect messages in a float or with [d / ]d.
-    virtual_text = false,
+    virtual_text = { source = "if_many" },
     virtual_lines = false,
 })
 

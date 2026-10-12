@@ -79,6 +79,10 @@
       "rev": "1b56ca4ba51c6014f986d6548ee629bdc95589d1",
       "src": "https://github.com/nvim-neotest/neotest-python"
     },
+    "neotest-vstest": {
+      "rev": "de30c7978937d07e6d29ab7807a00fad1c61120b",
+      "src": "https://github.com/nsidorenco/neotest-vstest"
+    },
     "netcoredbg-macOS-arm64.nvim": {
       "rev": "90c6fe7fa864cd753670fcd95b229da261760bc1",
       "src": "https://github.com/Cliffback/netcoredbg-macOS-arm64.nvim"

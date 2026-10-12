@@ -54,6 +54,10 @@ to clear the screen. Shells also give up `Ctrl-h/j/k` to pane navigation.
 
 ## Diagnostics
 
+Diagnostics appear inline after the affected code, with signs and underlines.
+They update after leaving Insert mode. C# uses Mason's `roslyn-language-server`
+(`roslyn_ls`), with solution/project detection supplied by nvim-lspconfig.
+
 `Space sd` searches diagnostics for the current file; `Space sD` searches all
 reported diagnostics, with code previews. Type to filter and press `Enter` to
 jump to a result. `Space le` shows diagnostics on the current line.
@@ -174,6 +178,9 @@ build/run also prompts if its command is missing. Leave build blank for projects
 that only need a run command, or the first run command blank for build-only
 projects. Enter each run command separately; leave the next command blank to
 finish. Each command launches concurrently in its own output terminal.
+Build and run prompts support Tab completion for executables and path arguments
+relative to Neovim's current directory. The working-directory prompt completes
+directories.
 
 For a CMake client/server project, enter `cmake --build build` as the build
 command, `./build/server` as run command 1, and `./build/client` as run command 2.
@@ -223,7 +230,7 @@ configuration. On macOS/Linux, with ToggleTerm installed and Python 3 available,
 run the process integration checks using
 `nvim --headless -u NONE -l scripts/test-runner.lua`.
 
-## Python tests
+## Python and C# tests
 
 [Neotest](https://github.com/nvim-neotest/neotest) provides a test tree, colored
 pass/fail signs beside tests, failure diagnostics, and output windows. Its
@@ -244,7 +251,7 @@ Test shortcuts share `Space p` with the build/run commands.
 | `Space pl` | Repeat the last test run |
 | `Space ps` | Toggle the test tree |
 | `Space pX` | Stop the nearest test run (uppercase X; `Space px` stops the project runner) |
-| `Space pd` | Debug the nearest test with the existing Python DAP adapter |
+| `Space pd` | Debug the nearest test with its language's DAP adapter |
 | `]T` / `[T` | Jump to the next / previous failed test |
 
 Inside the test tree: `Enter` expands, `r` runs the selected test/file/directory,
@@ -252,6 +259,15 @@ Inside the test tree: `Enter` expands, `r` runs the selected test/file/directory
 Debugging requires Mason's `debugpy` adapter to be installed (`:Mason`).
 No pytest installation is needed for unittest projects. For pytest projects,
 install pytest into that project's environment using its package manager.
+
+C# uses [neotest-vstest](https://github.com/nsidorenco/neotest-vstest) and the
+`c_sharp` Tree-sitter parser. Install the .NET SDK required by your project and
+keep `dotnet` on `PATH`. The adapter supports xUnit, NUnit, and MSTest; see its
+README for framework-specific limitations. Open a C# test file and use the same
+shortcuts above. `Space pt` runs tests under the containing `.sln`/`.slnx`
+solution, falling back to the `.csproj` directory for standalone projects.
+`Space pd` uses the existing `coreclr` debugger configuration (including the
+Apple Silicon netcoredbg plugin on macOS).
 
 ## Install
 

@@ -79,7 +79,7 @@ local function configure(root, done)
   local function prompt_run(index)
     local prompt = index == 1 and "Run command 1 (blank for build only): "
       or "Run command " .. index .. " (separate terminal; blank to finish): "
-    vim.ui.input({ prompt = prompt, default = previous[index] or "" }, function(value)
+    vim.ui.input({ prompt = prompt, default = previous[index] or "", completion = "shellcmdline" }, function(value)
       if value == nil then return end
       value = vim.trim(value)
       if value ~= "" then
@@ -96,7 +96,8 @@ local function configure(root, done)
       end)
     end)
   end
-  vim.ui.input({ prompt = "Build command (blank to skip): ", default = config.build }, function(value)
+  vim.ui.input({ prompt = "Build command (blank to skip): ", default = config.build,
+    completion = "shellcmdline" }, function(value)
     if value == nil then return end
     config.build = vim.trim(value)
     prompt_run(1)

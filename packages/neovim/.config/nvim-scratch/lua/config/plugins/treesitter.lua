@@ -49,6 +49,9 @@ local installation = treesitter.install({
   "c",
   "cpp",
 
+  -- C# (also used for Neotest discovery)
+  "c_sharp",
+
   -- Docker
   "dockerfile",
 })

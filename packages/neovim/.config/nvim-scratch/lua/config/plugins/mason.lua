@@ -42,6 +42,9 @@ local opts = {
     -- C / C++
     "clangd",
 
+    -- C# (Roslyn)
+    "roslyn_ls",
+
     -- Docker
     "dockerls",
   },
