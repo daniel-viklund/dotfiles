@@ -36,6 +36,7 @@ local function main()
   require("config.plugins.toggleterm")
   vim.pack.add = pack_add
   runner = require("config.runner")
+  local panel = require("config.terminals")
 
   -- The toggle creates terminal 1 on first use, then preserves its running shell.
   local toggle_all = fn.maparg([[<C-\>]], "n", false, true).callback
@@ -56,7 +57,7 @@ local function main()
   toggle_all()
   first:shutdown()
   toggle_all()
-  local replacement = assert(require("toggleterm.terminal").get(1, true))
+  local replacement = assert(panel.all()[1])
   assert(replacement:is_open() and replacement.job_id ~= first_job,
     "Toggle did not replace an exited hidden shell")
   replacement:shutdown()
@@ -131,13 +132,13 @@ while True:
     assert(index == #values, "Unexpected configuration prompts")
   end
   local function output()
-    local result = {}
-    for _, buf in ipairs(api.nvim_list_bufs()) do
-      if api.nvim_buf_is_loaded(buf) and vim.b[buf].toggle_number == 4 then
-        result[#result + 1] = table.concat(api.nvim_buf_get_lines(buf, 0, -1, false), "\n")
-      end
-    end
-    return table.concat(result, "\n")
+    local term = runner.terminal()
+    return term and api.nvim_buf_is_valid(term.bufnr)
+      and table.concat(api.nvim_buf_get_lines(term.bufnr, 0, -1, false), "\n") or ""
+  end
+  local function latest_outputs()
+    local latest = assert(runner.terminal())
+    return vim.tbl_filter(function(term) return term.panel_role == latest.panel_role end, runner.terminals())
   end
   local function settled()
     wait_for("runner exit", function()
@@ -165,7 +166,7 @@ while True:
   assert(read(project .. "/runs") == project .. "/app")
   assert(output():find("RUN OUTPUT", 1, true), "Finished output was lost")
   assert(api.nvim_get_current_win() == source_window, "Launch stole editor focus")
-  runner.toggle() -- Hide the completed output, then reopen it without executing again.
+  panel.hide() -- Reopen the completed output without executing again.
   runner.toggle()
   assert(read(project .. "/runs") == project .. "/app", "Toggling output reran the command")
   api.nvim_set_current_win(source_window)
@@ -177,31 +178,106 @@ while True:
   assert(runner.terminal():is_open(), "Project output was not restored")
   assert(api.nvim_get_current_win() == source_window, "Project-only toggle stole editor focus")
 
-  -- Hide/restore shells together with finished project output, without rerunning either.
+  -- Shells and outputs share one panel but keep distinct buffers and processes.
   local terminals = require("toggleterm.terminal")
-  local shell = terminals.Terminal:new({ count = 1, cmd = "cat" })
-  local hidden = terminals.Terminal:new({ count = 2, cmd = "cat" })
-  hidden:open()
-  hidden:close()
-  shell:open()
+  local shell = panel.create({ count = 1, cmd = "cat", display_name = "Shell sentinel" })
+  local hidden = panel.create({ count = 2, cmd = "cat", display_name = "Hidden sentinel" })
+  panel.show(shell)
   local shell_job = shell.job_id
   local project_term = runner.terminal()
   api.nvim_win_set_height(shell.window, 2)
   toggle_all()
-  assert(not shell:is_open() and not project_term:is_open(), "Did not hide both terminals")
+  assert(not shell:is_open(), "Did not hide the shell")
   assert(vim.uv.kill(fn.jobpid(shell_job), 0) == 0, "Hiding stopped the shell")
   toggle_all()
-  assert(shell:is_open() and project_term:is_open(), "Did not restore both terminals")
-  assert(api.nvim_get_current_win() == shell.window, "Mixed restore did not focus the shell")
-  assert(api.nvim_win_get_height(shell.window) == 15, "Shell retained its compressed height")
-  assert(api.nvim_win_get_height(project_term.window) == 15, "Project retained its compressed height")
+  assert(shell:is_open(), "Did not restore the same shell")
+  assert(api.nvim_get_current_win() == shell.window, "Restored shell did not receive focus")
+  assert(api.nvim_win_get_height(shell.window) == 15, "Panel retained its compressed height")
+  panel.show(project_term)
+  assert(project_term:is_open() and not shell:is_open(), "Switching did not reuse one panel")
+  assert(vim.tbl_contains(panel.all(), shell), "Switching discarded the shell")
   assert(not hidden:is_open(), "Restored a terminal that was already hidden")
   assert(shell.job_id == shell_job, "Restoring restarted the shell")
   assert(read(project .. "/runs") == project .. "/app", "Restoring reran the project")
-  shell:shutdown()
-  hidden:shutdown()
+  panel.dispose(shell)
+  panel.dispose(hidden)
   api.nvim_set_current_win(source_window)
   vim.cmd.stopinsert()
+
+  -- Regression: a build launched with the panel hidden must preserve every shell.
+  local editor_buffer = api.nvim_win_get_buf(source_window)
+  local a = panel.create({ cmd = "cat", display_name = "First shell" })
+  local b = panel.create({ cmd = "cat", display_name = "Second shell" })
+  panel.show(a)
+  local panel_window = a.window
+  fn.chansend(a.job_id, "SHELL HISTORY SENTINEL\n")
+  wait_for("shell scrollback", function()
+    return table.concat(api.nvim_buf_get_lines(a.bufnr, 0, -1, false), "\n"):find("SHELL HISTORY SENTINEL", 1, true)
+  end)
+  panel.show(b)
+  assert(b.window == panel_window and not a:is_open(), "New terminal created another split")
+  panel.hide()
+  configure(command("build", "0 0"), command("run"))
+  runner.execute("build")
+  settled()
+  local build_output = runner.terminal()
+  assert(vim.tbl_contains(panel.all(), a) and vim.tbl_contains(panel.all(), b), "Build lost hidden shells")
+  for _, term in ipairs({ a, b }) do
+    assert(vim.uv.kill(fn.jobpid(term.job_id), 0) == 0, "Build stopped a hidden shell")
+  end
+  assert(api.nvim_win_get_buf(source_window) == editor_buffer, "Build overwrote the source window")
+  panel.hide()
+  toggle_all()
+  assert(build_output:is_open(), "Toggle did not restore the selected build output")
+  _G.NvimTerminalPanelClick(a.id)
+  assert(a:is_open(), "Clicking a named terminal did not select it")
+  assert(table.concat(api.nvim_buf_get_lines(a.bufnr, 0, -1, false), "\n")
+    :find("SHELL HISTORY SENTINEL", 1, true), "Build overwrote shell scrollback")
+  local old_input, old_select = vim.ui.input, vim.ui.select
+  vim.ui.input = function(_, callback) callback("Shell 100% ready") end
+  panel.rename()
+  local rendered = api.nvim_eval_statusline(vim.wo[a.window].winbar, { winid = a.window, use_winbar = true }).str
+  assert(rendered:find("Shell 100% ready", 1, true) and rendered:find("Build", 1, true), "Named tabs did not render")
+  vim.ui.select = function(options, _, callback) callback(vim.tbl_contains(options, b) and b or "Cancel") end
+  panel.select()
+  assert(b:is_open(), "Terminal picker did not switch to the selected shell")
+  panel.close()
+  assert(api.nvim_buf_is_valid(b.bufnr), "Cancel closed a shell")
+  vim.ui.select = function(_, _, callback) callback("Close") end
+  panel.close()
+  assert(not api.nvim_buf_is_valid(b.bufnr), "Confirmed close did not close the shell")
+  vim.ui.input, vim.ui.select = old_input, old_select
+
+  -- Reusing a panel window for a source buffer must relinquish panel ownership.
+  panel.show(a)
+  local converted_window = a.window
+  api.nvim_win_set_buf(converted_window, editor_buffer)
+  panel.show(build_output, { focus = false })
+  assert(api.nvim_win_get_buf(converted_window) == editor_buffer, "Panel replaced an editor buffer")
+  assert(build_output.window ~= converted_window, "Panel reused a window it no longer owns")
+  api.nvim_win_close(converted_window, true)
+  panel.dispose(a)
+  api.nvim_set_current_win(source_window)
+
+  -- A build/run transition completing in the background must stay in its tab.
+  configure(command("build", "0 0.3"), command("run"))
+  local run_count = #fn.readfile(project .. "/runs")
+  local source_tab = api.nvim_get_current_tabpage()
+  runner.execute("build_run")
+  vim.cmd.tabnew()
+  local other_tab, other_window = api.nvim_get_current_tabpage(), api.nvim_get_current_win()
+  local other_buffer = api.nvim_get_current_buf()
+  wait_for("background run transition", function() return #fn.readfile(project .. "/runs") > run_count end)
+  settled()
+  assert(api.nvim_get_current_tabpage() == other_tab and api.nvim_get_current_win() == other_window,
+    "Background output stole the current tab")
+  assert(api.nvim_win_get_buf(other_window) == other_buffer and #api.nvim_tabpage_list_wins(other_tab) == 1,
+    "Background output replaced a buffer or opened in the wrong tab")
+  vim.cmd.tabclose()
+  assert(api.nvim_get_current_tabpage() == source_tab)
+  api.nvim_set_current_win(source_window)
+  -- Reset the fixture's run counter for the lifecycle assertions below.
+  fn.writefile({ project .. "/app" }, project .. "/runs")
 
   -- Failed builds retain their output and never launch the run command.
   configure(command("build", "7 0"), command("run"))
@@ -227,6 +303,13 @@ while True:
   wait_for("server and child", function() return read(project .. "/child-ready") ~= "" end)
   local first = tonumber(read(project .. "/starts"))
   local child = tonumber(read(project .. "/child-ready"))
+  local running_terminal = runner.terminal()
+  configure(command("build", "0 0"), command("serve"))
+  runner.execute("build")
+  wait_for("standalone build during run", function() return runner.terminal().panel_exit_code == 0 end)
+  assert(vim.uv.kill(first, 0) == 0 and vim.uv.kill(child, 0) == 0, "Build stopped a running project")
+  assert(api.nvim_buf_is_valid(running_terminal.bufnr) and vim.tbl_contains(panel.all(), running_terminal),
+    "Build discarded the running project's terminal")
   runner.execute("run")
   runner.execute("run")
   runner.execute("run")
@@ -263,8 +346,9 @@ while True:
   wait_for("both processes and children", function()
     return read(server .. "/child-ready") ~= "" and read(client .. "/child-ready") ~= ""
   end)
-  local outputs = runner.terminals()
-  assert(#outputs == 2 and outputs[1].id == 4 and outputs[2].id == 6, "Overwrote an occupied terminal")
+  local outputs = latest_outputs()
+  assert(#outputs == 2 and outputs[1].id ~= occupied.id and outputs[2].id ~= occupied.id
+    and outputs[1].id ~= outputs[2].id, "Overwrote an occupied terminal")
   wait_for("independent stdout/stderr", function()
     for i, name in ipairs({ "server", "client" }) do
       local lines = table.concat(api.nvim_buf_get_lines(outputs[i].bufnr, 0, -1, false), "\n")
@@ -296,14 +380,17 @@ while True:
   settled()
   assert(#fn.readfile(server .. "/starts") == 2 and #fn.readfile(client .. "/starts") == 2,
     "Stop did not cancel a multiple-command restart")
-  outputs = runner.terminals()
+  outputs = latest_outputs()
   assert(runner.reserves(outputs[2].id), "Finished output ID was not reserved")
-  for _, toggle in ipairs({ runner.toggle, toggle_all }) do
-    toggle()
-    assert(not outputs[1]:is_open() and not outputs[2]:is_open(), "Did not hide both outputs")
-    toggle()
-    assert(outputs[1]:is_open() and outputs[2]:is_open(), "Did not restore both finished outputs")
-  end
+  panel.hide()
+  runner.toggle()
+  assert(outputs[1]:is_open(), "Did not restore finished output")
+  panel.show(outputs[2])
+  assert(outputs[2]:is_open() and not outputs[1]:is_open(), "Did not switch finished output")
+  toggle_all()
+  assert(not outputs[2]:is_open(), "Did not hide finished output")
+  toggle_all()
+  assert(outputs[2]:is_open(), "Did not restore the selected finished output")
   assert(#fn.readfile(server .. "/starts") == 2 and #fn.readfile(client .. "/starts") == 2,
     "Restoring finished output reran commands")
   assert(vim.uv.kill(fn.jobpid(occupied.job_id), 0) == 0, "Stopped an unrelated shell")

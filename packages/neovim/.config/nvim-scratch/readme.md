@@ -169,6 +169,31 @@ the same buffer in two windows, useful for viewing different parts of one file.
 Native `Ctrl-w H/J/K/L` moves an existing window to the corresponding edge.
 Use `Ctrl-w c` to close a window and `Ctrl-w =` to equalize window sizes.
 
+## Terminal panel
+
+`Ctrl-\` shows or hides one bottom panel from the editor or a managed terminal.
+Each shell and project command has its own persistent buffer and process. The
+panel remembers the selected terminal; hiding it does not stop jobs or discard
+scrollback. The first toggle creates a shell. Restoring a shell focuses it;
+restoring project output keeps focus in the editor.
+
+The panel header shows named terminals, such as `Shell 1`, `Build`, and `Run 1`.
+Click a name to switch, or click `+` to create another shell. Finished terminals
+remain selectable and display their exit code.
+
+| Mapping (Normal mode) | Action |
+| --- | --- |
+| `Space tn` | Create and select a new shell |
+| `Space ts` | Search/select terminals by name and project command |
+| `]t` / `[t` | Next / previous terminal |
+| `Space tr` | Rename the selected terminal |
+| `Space tx` | Close the selected terminal; confirm before stopping a live process |
+| `Space to` | Select the latest project output |
+
+Use `jk` to leave terminal input mode, then use the Normal-mode shortcuts.
+`Ctrl-h/j/k/l` continues to navigate editor splits and tmux panes. Numbered
+terminal shortcuts (`Space t1`–`Space t4`) are replaced by the named selector.
+
 ## Build and run
 
 Use `Space pc` to set any shell **build command**, **run commands**, and
@@ -197,22 +222,19 @@ for success and does not create separate terminals.
 | `Space pR` | Stop all commands, build, then run only if the build succeeds; skip an empty build command |
 | `Space px` | Stop all commands, including any pending restart or build/run sequence |
 | `Space pc` | Configure this project's commands |
-| `Space t4` | Show/hide all latest build/run outputs |
+| `Space to` | Show the latest build/run output in the terminal panel |
 
-Terminal **4** is reserved for this runner. Additional run commands use free
-terminal numbers above 4, leaving existing shells alone. Terminals 1–3 remain
-ordinary shells; `Space tn` skips all runner outputs, including finished ones.
-A new build/run replaces the current set after every process exits. Output
-stays visible when a command finishes or fails, until the next build/run starts.
-One run command exiting does not stop the others. Launching shows the
-output and returns focus to your source window. Navigate to the terminal with
-your window mappings and press `i` for interactive input; `jk` returns to Normal
-mode. Opening hidden output with `Space t4` also focuses the terminal.
+Build and run use separate named output terminals. `Space pb` replaces only the
+previous build output and leaves existing run commands and shells alive.
+`Space pr` replaces only the run commands. `Space pR` stops both before building
+and starting the configured run commands. Multiple run commands run concurrently
+and have separate buffers; select their output using the header or `Space ts`.
+One run command exiting does not stop the others.
 
-`Ctrl-\` hides/restores the visible terminals together, including build/run
-output, from Normal mode or inside ToggleTerm. If there is nothing to restore,
-it opens terminal 1. Restoring a running shell focuses it and enters terminal
-input mode; restoring only project output keeps focus in the editor.
+Starting a command shows its output while keeping focus in your source window.
+Output remains readable after exit and across hiding/reopening the panel.
+Hidden shells remain listed and retain their jobs and scrollback when builds
+start. Background build/run transitions stay in the originating editor tab.
 
 Commands run through Neovim's `shell` using files on disk, so save your changes
 first. Build and run are separate processes: put shared environment setup in
@@ -225,8 +247,8 @@ directories can be absolute or relative to the project root, such as `src/api`.
 Settings are stored locally in `stdpath("data")/project-runner/`, separately for
 each project, and survive Neovim restarts. They do not add files to your repos.
 
-The implementation lives in `lua/config/runner.lua`, loaded by the ToggleTerm
-configuration. On macOS/Linux, with ToggleTerm installed and Python 3 available,
+The implementation lives in `lua/config/terminals.lua` and `lua/config/runner.lua`,
+loaded by the ToggleTerm configuration. On macOS/Linux, with ToggleTerm installed and Python 3 available,
 run the process integration checks using
 `nvim --headless -u NONE -l scripts/test-runner.lua`.
 

@@ -1,7 +1,8 @@
--- A project runner with one output terminal per command, starting at terminal 4.
+-- Project jobs publish named output buffers in the terminal panel.
 local M = {}
 local api = vim.api
-local current, pending
+local active, pending = {}, {}
+local last_phase
 local quitting = false
 local pump
 local launch_dir = vim.g.project_runner_launch_dir or vim.fn.getcwd()
@@ -108,99 +109,94 @@ function M.configure()
   configure(project_root())
 end
 
-local function stop_current()
-  if not current then return end
+local function stop_state(state)
+  if not state then return end
   -- Cancel a queued build -> run transition as well as a running process.
-  current.cancelled = true
-  for _, job in ipairs(current.jobs) do
-    if job.running and not job.stopping then
+  state.cancelled = true
+  for _, job in ipairs(state.jobs) do
+    if job.running and not job.stopping and job.term then
       job.stopping = true
       vim.fn.jobstop(job.term.job_id)
     end
   end
 end
 
+local function stop_current()
+  for _, state in pairs(active) do stop_state(state) end
+end
+
 function M.stop()
-  pending = nil
+  pending = {}
   stop_current()
 end
 
-pump = function()
-  if quitting or not pending or (current and current.running > 0) then return end
-  local request = pending
-  pending = nil
-  local terminals = require("toggleterm.terminal")
-  local occupied = terminals.get(4, true)
-  if occupied and (not current or occupied ~= current.jobs[1].term) then
-    notify("Terminal 4 is in use. Close its shell with exit before using the runner.", vim.log.levels.WARN)
+pump = function(role)
+  if quitting then return end
+  if not role then
+    pump("build")
+    pump("run")
     return
   end
+  local current = active[role]
+  if not pending[role] or (current and current.running > 0) then return end
+  if role == "build" and pending.build.run_after and active.run and active.run.running > 0 then return end
+  local request = pending[role]
+  pending[role] = nil
+  local terminals = require("config.terminals")
   if current then
-    for _, job in ipairs(current.jobs) do job.term:shutdown() end
+    for _, job in ipairs(current.jobs) do terminals.dispose(job.term) end
   end
 
-  local state = { jobs = {}, running = 0 }
-  current = state
+  local state = { jobs = {}, running = 0, request = request }
+  active[role], last_phase = state, role
   local commands = request.phase == "build" and { request.config.build } or run_commands(request.config.run)
-  local id = 4
   for index, command in ipairs(commands) do
-    while terminals.get(id, true) do id = id + 1 end
     local job = { running = true }
     state.jobs[#state.jobs + 1] = job
     state.running = state.running + 1
     local label = request.phase == "run" and #commands > 1 and "run " .. index or request.phase
-    job.term = terminals.Terminal:new({
-      count = id,
-      cmd = command,
-      dir = request.cwd,
-      direction = "horizontal",
-      display_name = label .. " · " .. command,
-      close_on_exit = false,
-      on_exit = function(_, _, code)
-        if not job.running then return end
-        job.running = false
-        state.running = state.running - 1
-        -- ToggleTerm finishes its TermClose handling before a replacement starts.
-        vim.schedule(function()
-          if quitting or current ~= state then return end
-          if not state.cancelled then
-            if code ~= 0 then
-              notify(label .. " exited with code " .. code, vim.log.levels.ERROR)
-            elseif request.phase == "build" then
-              notify("Build succeeded")
-              if request.run_after then
-                pending = vim.tbl_extend("force", request, { phase = "run", run_after = false })
+    local ok, err = pcall(function()
+      job.term = terminals.create({
+        cmd = command,
+        dir = request.cwd,
+        direction = "horizontal",
+        panel_kind = "output",
+        panel_role = request.phase,
+        display_name = label == "build" and "Build" or (label == "run" and "Run" or label:gsub("^run", "Run")),
+        close_on_exit = false,
+        on_exit = function(_, _, code)
+          if not job.running then return end
+          job.running = false
+          state.running = state.running - 1
+          -- ToggleTerm finishes its TermClose handling before a replacement starts.
+          vim.schedule(function()
+            if quitting or active[role] ~= state then return end
+            if not state.cancelled then
+              if code ~= 0 then
+                notify(label .. " exited with code " .. code, vim.log.levels.ERROR)
+              elseif request.phase == "build" then
+                notify("Build succeeded")
+                if request.run_after then
+                  pending.run = vim.tbl_extend("force", request, { phase = "run", run_after = false })
+                end
               end
             end
-          end
-          pump()
-        end)
-      end,
-    })
-
-    local ok, err = pcall(function() job.term:open() end)
+            pump()
+          end)
+        end,
+      })
+      terminals.show(job.term, { focus = false, tab = request.tab })
+    end)
     if not ok or not job.term.job_id or job.term.job_id <= 0 then
       if job.running then
         job.running = false
         state.running = state.running - 1
       end
-      stop_current()
+      stop_state(state)
       notify("Could not start " .. label .. ": " .. tostring(err or "terminal did not start"), vim.log.levels.ERROR)
       break
     end
-    id = id + 1
   end
-  -- Show output while keeping editing shortcuts available in the source window.
-  vim.schedule(function()
-    if current == state and api.nvim_win_is_valid(request.window)
-      and vim.iter(state.jobs):any(function(job)
-        return api.nvim_get_current_win() == job.term.window
-          and api.nvim_win_get_buf(request.window) ~= job.term.bufnr
-      end) then
-      api.nvim_set_current_win(request.window)
-      vim.cmd.stopinsert()
-    end
-  end)
 end
 
 function M.execute(action)
@@ -222,11 +218,17 @@ function M.execute(action)
       notify("Working directory does not exist: " .. cwd, vim.log.levels.ERROR)
       return
     end
-    pending = {
-      root = root, config = settings, cwd = cwd, window = window,
+    if action == "build_run" then
+      pending = {}
+      stop_current()
+    else
+      stop_state(active[phase])
+      if action == "run" and active.build then active.build.request.run_after = false end
+    end
+    pending[phase] = {
+      root = root, config = settings, cwd = cwd, window = window, tab = api.nvim_get_current_tabpage(),
       phase = phase, run_after = action == "build_run" and phase == "build",
     }
-    stop_current()
     pump()
   end
   local needs_config = (action == "build" and config.build == "")
@@ -235,17 +237,22 @@ function M.execute(action)
 end
 
 function M.terminal()
+  local current = active[last_phase]
   return current and current.jobs[1] and current.jobs[1].term
 end
 
 function M.terminals()
   local result = {}
-  for _, job in ipairs(current and current.jobs or {}) do result[#result + 1] = job.term end
+  for _, role in ipairs({ "build", "run" }) do
+    for _, job in ipairs(active[role] and active[role].jobs or {}) do
+      if job.term then result[#result + 1] = job.term end
+    end
+  end
   return result
 end
 
 function M.reserves(id)
-  return id == 4 or vim.iter(M.terminals()):any(function(term) return term.id == id end)
+  return vim.iter(M.terminals()):any(function(term) return term.id == id end)
 end
 
 function M.toggle()
@@ -253,15 +260,8 @@ function M.toggle()
     return term.bufnr and api.nvim_buf_is_valid(term.bufnr)
   end, M.terminals())
   if #output > 0 then
-    -- Keep objects even after exit: ToggleTerm removes finished jobs from its registry.
-    local visible = vim.iter(output):any(function(term) return term:is_open() end)
-    for _, term in ipairs(output) do
-      if visible then
-        if term:is_open() then term:close() end
-      else
-        term:open()
-      end
-    end
+    local latest = M.terminal()
+    require("config.terminals").show(vim.tbl_contains(output, latest) and latest or output[1])
   else
     notify("No runner output yet. Use <leader>pr to run or <leader>pb to build.")
   end
@@ -274,7 +274,7 @@ function M.setup()
     { "pR", function() M.execute("build_run") end, "Build and run project" },
     { "px", M.stop, "Stop project" },
     { "pc", M.configure, "Configure project commands" },
-    { "t4", M.toggle, "Toggle project output terminals" },
+    { "to", M.toggle, "Show project output" },
   }
   for _, mapping in ipairs(mappings) do
     vim.keymap.set("n", "<leader>" .. mapping[1], mapping[2], { desc = mapping[3] })
