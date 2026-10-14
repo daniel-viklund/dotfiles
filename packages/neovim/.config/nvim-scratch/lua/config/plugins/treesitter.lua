@@ -32,6 +32,7 @@ local installation = treesitter.install({
 
   -- Shell
   "bash",
+  "powershell",
 
   -- Rust
   "rust",
