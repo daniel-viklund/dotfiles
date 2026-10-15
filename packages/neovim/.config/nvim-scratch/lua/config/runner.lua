@@ -274,7 +274,7 @@ function M.setup()
     { "pR", function() M.execute("build_run") end, "Build and run project" },
     { "px", M.stop, "Stop project" },
     { "pc", M.configure, "Configure project commands" },
-    { "to", M.toggle, "Show project output" },
+    { "po", M.toggle, "Show project output" },
   }
   for _, mapping in ipairs(mappings) do
     vim.keymap.set("n", "<leader>" .. mapping[1], mapping[2], { desc = mapping[3] })

@@ -55,25 +55,23 @@ neotest.setup({
   floating = { border = "rounded" },
 })
 
--- Tests share the project prefix; uppercase X avoids the project stop mapping.
+-- Keep test actions together under <leader>t.
 local mappings = {
-  { "pn", function() neotest.run.run() end, "Run nearest test" },
-  { "pf", function() neotest.run.run(vim.fn.expand("%:p")) end, "Run test file" },
-  { "pt", function()
+  { "tn", function() neotest.run.run() end, "Run nearest test" },
+  { "tf", function() neotest.run.run(vim.fn.expand("%:p")) end, "Run test file" },
+  { "tt", function()
     local path = vim.fn.expand("%:p")
     local root = vim.bo.filetype == "cs" and dotnet_root(path) or python.get_root(path)
     neotest.run.run(root or vim.fn.getcwd())
     neotest.summary.open()
   end, "Run project tests" },
-  { "pl", function() neotest.run.run_last() end, "Rerun last tests" },
-  { "ps", function() neotest.summary.toggle() end, "Toggle test summary" },
-  { "pX", function() neotest.run.stop() end, "Stop nearest test run" },
-  { "pd", function() neotest.run.run({ strategy = "dap" }) end, "Debug nearest test" },
+  { "tl", function() neotest.run.run_last() end, "Rerun last tests" },
+  { "ts", function() neotest.summary.toggle() end, "Toggle test summary" },
+  { "tx", function() neotest.run.stop() end, "Stop nearest test run" },
+  { "td", function() neotest.run.run({ strategy = "dap" }) end, "Debug nearest test" },
+  { "tj", function() neotest.jump.next({ status = "failed" }) end, "Next failed test" },
+  { "tk", function() neotest.jump.prev({ status = "failed" }) end, "Previous failed test" },
 }
 for _, mapping in ipairs(mappings) do
   vim.keymap.set("n", "<leader>" .. mapping[1], mapping[2], { desc = mapping[3] })
 end
-vim.keymap.set("n", "]T", function() neotest.jump.next({ status = "failed" }) end,
-  { desc = "Next failed test" })
-vim.keymap.set("n", "[T", function() neotest.jump.prev({ status = "failed" }) end,
-  { desc = "Previous failed test" })

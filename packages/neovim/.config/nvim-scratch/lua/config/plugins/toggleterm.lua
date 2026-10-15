@@ -17,14 +17,6 @@ terminals.setup()
 require("config.runner").setup()
 
 vim.keymap.set("n", [[<C-\>]], terminals.toggle, { desc = "Toggle terminal panel" })
-for _, mapping in ipairs({
-  { "tn", terminals.new_shell, "New terminal" },
-  { "ts", terminals.select, "Select terminal" },
-  { "tr", terminals.rename, "Rename terminal" },
-  { "tx", terminals.close, "Close terminal" },
-}) do
-  vim.keymap.set("n", "<leader>" .. mapping[1], mapping[2], { desc = mapping[3] })
-end
 vim.keymap.set("n", "]t", function() terminals.cycle(1) end, { desc = "Next terminal" })
 vim.keymap.set("n", "[t", function() terminals.cycle(-1) end, { desc = "Previous terminal" })
 
@@ -36,9 +28,11 @@ vim.api.nvim_create_autocmd("TermOpen", {
     local opts = { buffer = 0 }
     vim.keymap.set("t", [[<C-\>]], terminals.toggle, { buffer = 0, desc = "Toggle terminal panel" })
     vim.keymap.set("t", "jk", [[<C-\><C-n>]], opts)
-    vim.keymap.set("t", "<C-h>", [[<Cmd>TmuxNavigateLeft<CR>]], opts)
+    vim.keymap.set({ "n", "t" }, "<C-h>", function() terminals.cycle(-1) end,
+      { buffer = 0, desc = "Previous terminal" })
     vim.keymap.set("t", "<C-j>", [[<Cmd>TmuxNavigateDown<CR>]], opts)
     vim.keymap.set("t", "<C-k>", [[<Cmd>TmuxNavigateUp<CR>]], opts)
-    vim.keymap.set("t", "<C-l>", [[<Cmd>TmuxNavigateRight<CR>]], opts)
+    vim.keymap.set({ "n", "t" }, "<C-l>", function() terminals.cycle(1) end,
+      { buffer = 0, desc = "Next terminal" })
   end,
 })

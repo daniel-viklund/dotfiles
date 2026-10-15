@@ -39,8 +39,9 @@ back to `snacks.lua`. Disabled plugins stay installed and in the lockfile.
 ## Window and tmux pane navigation
 
 `Ctrl-h/j/k/l` moves left/down/up/right through Neovim windows, then into an
-adjacent tmux pane at the edge. The same keys work in ToggleTerm and in tmux
-shell panes, without a prefix. Outside tmux they still navigate Neovim windows.
+adjacent tmux pane at the edge. In ToggleTerm, `Ctrl-h/l` cycles terminal tabs
+and `Ctrl-j/k` navigates windows. In tmux shell panes, these keys navigate panes
+without a prefix. Outside tmux they still navigate Neovim windows.
 Editor navigation uses Normal mode; Telescope and other TUIs keep their own
 input mappings. `Ctrl-\` remains the terminal toggle.
 
@@ -51,6 +52,20 @@ plugins. Reload tmux configuration with `Ctrl-a`, then `r`.
 
 In a tmux shell, `Ctrl-l` now navigates right; use `Ctrl-a`, then `Ctrl-l`,
 to clear the screen. Shells also give up `Ctrl-h/j/k` to pane navigation.
+
+## Telescope search
+
+| Mapping (Normal mode) | Action |
+| --- | --- |
+| `Space sf` | Find files |
+| `Space sg` | Search project text with live grep |
+| `Space sw` | Search the word under the cursor |
+| `Space sb` | Search open buffers |
+| `Space s/` | Search the current buffer |
+| `Space sh` | Search help |
+| `Space sr` | Resume the last search |
+| `Space ss` | Search saved sessions |
+| `Space sd` / `Space sD` | Search current-file / workspace diagnostics |
 
 ## Diagnostics
 
@@ -183,16 +198,12 @@ remain selectable and display their exit code.
 
 | Mapping (Normal mode) | Action |
 | --- | --- |
-| `Space tn` | Create and select a new shell |
-| `Space ts` | Search/select terminals by name and project command |
 | `]t` / `[t` | Next / previous terminal |
-| `Space tr` | Rename the selected terminal |
-| `Space tx` | Close the selected terminal; confirm before stopping a live process |
-| `Space to` | Select the latest project output |
+| `Space po` | Select the latest project output |
 
 Use `jk` to leave terminal input mode, then use the Normal-mode shortcuts.
-`Ctrl-h/j/k/l` continues to navigate editor splits and tmux panes. Numbered
-terminal shortcuts (`Space t1`–`Space t4`) are replaced by the named selector.
+`Ctrl-h/l` cycles terminal tabs in both Normal and terminal input mode;
+`Ctrl-j/k` navigates editor splits and tmux panes. `Space t` is reserved for tests.
 
 ## Build and run
 
@@ -222,13 +233,13 @@ for success and does not create separate terminals.
 | `Space pR` | Stop all commands, build, then run only if the build succeeds; skip an empty build command |
 | `Space px` | Stop all commands, including any pending restart or build/run sequence |
 | `Space pc` | Configure this project's commands |
-| `Space to` | Show the latest build/run output in the terminal panel |
+| `Space po` | Show the latest build/run output in the terminal panel |
 
 Build and run use separate named output terminals. `Space pb` replaces only the
 previous build output and leaves existing run commands and shells alive.
 `Space pr` replaces only the run commands. `Space pR` stops both before building
 and starting the configured run commands. Multiple run commands run concurrently
-and have separate buffers; select their output using the header or `Space ts`.
+and have separate buffers; select their output using the header or `Ctrl-h/l`.
 One run command exiting does not stop the others.
 
 Starting a command shows its output while keeping focus in your source window.
@@ -262,19 +273,19 @@ pytest if installed, otherwise Python's built-in unittest. An activated
 by this config. Save your changes before running tests.
 
 Open Neovim from the Python project directory, then open a test file and press
-`Space pt` to run the project and show the test tree on the right.
-Test shortcuts share `Space p` with the build/run commands.
+`Space tt` to run the project and show the test tree on the right.
+Test shortcuts use `Space t`; build/run commands use `Space p`.
 
 | Mapping (Normal mode) | Action |
 | --- | --- |
-| `Space pn` | Run the test under/nearest the cursor |
-| `Space pf` | Run the current test file |
-| `Space pt` | Run all project tests and open the summary |
-| `Space pl` | Repeat the last test run |
-| `Space ps` | Toggle the test tree |
-| `Space pX` | Stop the nearest test run (uppercase X; `Space px` stops the project runner) |
-| `Space pd` | Debug the nearest test with its language's DAP adapter |
-| `]T` / `[T` | Jump to the next / previous failed test |
+| `Space tn` | Run the test under/nearest the cursor |
+| `Space tf` | Run the current test file |
+| `Space tt` | Run all project tests and open the summary |
+| `Space tl` | Repeat the last test run |
+| `Space ts` | Toggle the test tree |
+| `Space tx` | Stop the nearest test run |
+| `Space td` | Debug the nearest test with its language's DAP adapter |
+| `Space tj` / `Space tk` | Jump to the next / previous failed test |
 
 Inside the test tree: `Enter` expands, `r` runs the selected test/file/directory,
 `o` shows output, `i` jumps to source, `d` debugs, and `?` shows help.
@@ -286,9 +297,9 @@ C# uses [neotest-vstest](https://github.com/nsidorenco/neotest-vstest) and the
 `c_sharp` Tree-sitter parser. Install the .NET SDK required by your project and
 keep `dotnet` on `PATH`. The adapter supports xUnit, NUnit, and MSTest; see its
 README for framework-specific limitations. Open a C# test file and use the same
-shortcuts above. `Space pt` runs tests under the containing `.sln`/`.slnx`
+shortcuts above. `Space tt` runs tests under the containing `.sln`/`.slnx`
 solution, falling back to the `.csproj` directory for standalone projects.
-`Space pd` uses the existing `coreclr` debugger configuration (including the
+`Space td` uses the existing `coreclr` debugger configuration (including the
 Apple Silicon netcoredbg plugin on macOS).
 
 ## Install

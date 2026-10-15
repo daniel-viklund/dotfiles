@@ -11,6 +11,16 @@ require("neo-tree").setup({
     position = "current",
     mappings = {
       ["<CR>"] = "open",
+      ["<C-o>"] = {
+        function(state)
+          local node = state.tree:get_node()
+          if node and node.path then
+            local dir = node.type == "directory" and node.path or vim.fs.dirname(node.path)
+            vim.ui.open(dir)
+          end
+        end,
+        desc = "Open directory in system file manager",
+      },
       ["q"] = "close_window",
     },
   },
