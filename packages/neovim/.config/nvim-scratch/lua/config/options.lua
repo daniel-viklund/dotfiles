@@ -1,5 +1,6 @@
 vim.opt.clipboard = "unnamedplus"
 vim.opt.autoread = true
+vim.opt.splitright = true -- Open vertical splits (including Telescope Ctrl-v) to the right.
 vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold", "TermLeave", "TermClose" }, {
   group = vim.api.nvim_create_augroup("ReloadExternalChanges", { clear = true }),
   callback = vim.schedule_wrap(function()

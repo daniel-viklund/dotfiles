@@ -55,7 +55,6 @@ vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = 'Telescope find f
 vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = 'Telescope live grep' })
 vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = 'Search word under cursor' })
 vim.keymap.set('n', '<leader>sb', builtin.buffers, { desc = 'Search open buffers' })
-vim.keymap.set('n', '<leader>s/', builtin.current_buffer_fuzzy_find, { desc = 'Search current buffer' })
 vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = 'Search help' })
 vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = 'Resume last search' })
 vim.keymap.set('n', '<leader>sd', function()

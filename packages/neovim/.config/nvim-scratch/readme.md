@@ -61,11 +61,13 @@ to clear the screen. Shells also give up `Ctrl-h/j/k` to pane navigation.
 | `Space sg` | Search project text with live grep |
 | `Space sw` | Search the word under the cursor |
 | `Space sb` | Search open buffers |
-| `Space s/` | Search the current buffer |
 | `Space sh` | Search help |
 | `Space sr` | Resume the last search |
 | `Space ss` | Search saved sessions |
 | `Space sd` / `Space sD` | Search current-file / workspace diagnostics |
+
+In Telescope, `Ctrl-v` opens the selected file in a vertical split to the right
+of the current buffer. Vertical splits open to the right by default.
 
 ## Diagnostics
 
