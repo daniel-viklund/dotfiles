@@ -1,19 +1,14 @@
 vim.pack.add({
-  { src = "https://github.com/rose-pine/neovim", name = "rose-pine" },
+  { src = "https://github.com/metalelf0/black-metal-theme-neovim", name = "black-metal-theme-neovim" },
 })
 
-require("rose-pine").setup({
-  styles = {
-    -- Let the terminal's opacity and blur show through.
-    transparency = true,
-  },
-  highlight_groups = {
-    -- Increase the original lavender tint from 15% to 30%, keeping syntax colors.
-    Visual = { bg = "iris", blend = 30, inherit = false },
-    VisualNOS = { link = "Visual", inherit = false },
-  },
+require("black-metal").setup({
+  theme = "bathory",
+  variant = "dark",
+  alt_bg = false,
+  transparent = false,
 })
-vim.cmd("colorscheme rose-pine")
+require("black-metal").load()
 
 -- Keep hover, signature help, and completion surfaces on the editor background.
 local function match_popup_backgrounds()

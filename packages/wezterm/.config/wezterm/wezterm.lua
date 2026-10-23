@@ -44,11 +44,18 @@ config.warn_about_missing_glyphs = true
 -- COLORS / THEME
 --------------------------------------------------------------------------------
 -- Use a built-in scheme (hundreds available). Browse: https://wezfurlong.org/wezterm/colorschemes/
+-- Black Metal Bathory, matching Neovim and tmux (including window padding).
 config.colors = {
-  foreground = '#e0def4', -- Rose Pine text
---   -- Match Neovim's Rose Pine background, including leftover space below the grid.
-  background = '#191724',
-  cursor_bg = '#e1e1e1'
+  foreground = '#f1f1f1',
+  background = '#000000',
+  cursor_bg = '#f1f1f1',
+  cursor_fg = '#000000',
+  cursor_border = '#f1f1f1',
+  selection_bg = '#222222',
+  selection_fg = '#f1f1f1',
+  split = '#505050',
+  ansi = { '#3E2018', '#5f8787', '#c1c1c1', '#888888', '#aaaaaa', '#999999', '#fbcb97', '#f1f1f1' },
+  brights = { '#505050', '#5f8787', '#c1c1c1', '#888888', '#aaaaaa', '#e78a43', '#fbcb97', '#f1f1f1' },
 }
 
 -- ...or define colors by hand. This overrides parts of the scheme above.
@@ -73,11 +80,10 @@ config.colors = {
 -- or 'NONE' for no decorations at all.
 config.window_decorations = "RESIZE"
 
--- Transparent terminal
-config.window_background_opacity = 0.9
+-- Fully opaque terminal
+config.window_background_opacity = 1.0
 
--- Subtle macOS background blur
-config.macos_window_background_blur = 20
+config.macos_window_background_blur = 0
 
 config.window_padding = {
   left = 0,
