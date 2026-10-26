@@ -1,3 +1,30 @@
+-- Neovim 0.13 provides native multicursors; retain the plugin for stable 0.12.
+if vim.fn.has("nvim-0.13") == 1 then
+  local ns = vim.api.nvim_create_namespace("nvim.multicursor")
+
+  vim.keymap.set("x", "I", "QI", { desc = "Multicursor: Insert on selected lines" })
+  vim.keymap.set("x", "A", "QA", { desc = "Multicursor: Append on selected lines" })
+  vim.keymap.set("n", "<leader>mj", "1Qj1Q", { desc = "Multicursor: Add cursor below" })
+  vim.keymap.set("n", "<leader>mk", "1Qk1Q", { desc = "Multicursor: Add cursor above" })
+  vim.keymap.set("n", "<leader>mn", "1Q*1Q", { desc = "Multicursor: Add next matching word" })
+  vim.keymap.set("n", "<leader>mN", "1Q#1Q", { desc = "Multicursor: Add previous matching word" })
+  vim.keymap.set("n", "<leader>ma", "zq*", { desc = "Multicursor: Add all matching words" })
+  vim.keymap.set("n", "<Esc>", function()
+    vim.api.nvim_buf_clear_namespace(0, ns, 0, -1)
+    vim.cmd.nohlsearch()
+  end, { desc = "Clear extra cursors and search highlight" })
+
+  local function highlights()
+    vim.api.nvim_set_hl(0, "MCursor", { fg = "#000000", bg = "#fbcb97" })
+  end
+  vim.api.nvim_create_autocmd("ColorScheme", {
+    group = vim.api.nvim_create_augroup("ConfigMulticursorHighlights", { clear = true }),
+    callback = highlights,
+  })
+  highlights()
+  return
+end
+
 vim.pack.add({
   { src = "https://github.com/jake-stewart/multicursor.nvim", version = "1.0" },
 })

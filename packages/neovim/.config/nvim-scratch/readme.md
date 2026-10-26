@@ -14,6 +14,12 @@ the home screen to quit. Customize the artwork in `lua/config/start.lua`.
 
 ## Plugins
 
+Emmet is installed automatically through Mason and enabled for HTML, CSS,
+JSX/TSX, and other supported web filetypes. In an HTML file, type `!` in
+Insert mode and accept the Emmet completion with `Ctrl-y` to insert HTML
+boilerplate. `Ctrl-Space` opens completion manually if needed. Abbreviations
+such as `ul>li*3` work the same way.
+
 Each plugin has one file in `lua/config/plugins/` containing its install
 declaration and configuration. `init.lua` automatically loads every other
 `.lua` file in that directory, alphabetically.
@@ -154,22 +160,29 @@ intact. Use `:AutoSession disable` to skip saving for the rest of a run.
 
 ## Multiple cursors
 
-`lua/config/plugins/multicursor.lua` configures
-[multicursor.nvim](https://github.com/jake-stewart/multicursor.nvim) with gold
-secondary cursors. The highlights are reapplied when the colorscheme changes.
+Neovim 0.13 nightly uses built-in multicursors (`:help multicursor`). On 0.12,
+`lua/config/plugins/multicursor.lua` falls back to multicursor.nvim.
 
-Select a block with `Ctrl-v`, then press `I` to insert or `A` to append at each
-selected line. These mappings also work with linewise and characterwise visual
-selections. The extra insertion points stay highlighted while you type; the
-text is repeated on the other lines when you leave Insert mode. Press `Esc`
-(or your existing `jk` mapping) to leave Insert mode, then `Esc` again to clear
-the extra cursors and search highlighting.
+On this Mac, the official Apple Silicon nightly is installed under
+`~/.local/opt/nvim-nightly`, with `~/.local/bin/nvim` pointing to its executable.
+The Homebrew stable build remains available at `/opt/homebrew/bin/nvim`.
+To return to stable, remove the `~/.local/bin/nvim` symlink and run `rehash`.
+Nightly is a development build and is updated separately from Homebrew.
 
-| Mapping | Action (Normal or Visual mode) |
+Select lines or a block, then press `I` or `A` to create cursors and insert or
+append. Press `Esc` (or `jk`) to leave Insert mode, then `Esc` again to clear
+cursors and search highlighting. `Ctrl-l` keeps its tmux navigation mapping.
+
+| Mapping | Native multicursor action |
 | --- | --- |
-| `Space mj` / `Space mk` | Add a cursor below / above |
-| `Space mn` / `Space mN` | Add the next / previous matching word or selection |
-| `Space ma` | Add cursors at all matching words or selections |
+| `Q` | Toggle a cursor at the current position |
+| Visual `Q` | Place a cursor on each selected line |
+| `zq*` / `zqgn` | Add cursors at each matching word / search match |
+| `q=` | Toggle whether motions move all cursors |
+| `gQ` | Restore the previous cursors |
+| `Space mj` / `Space mk` | Add a cursor below / above (Normal mode) |
+| `Space mn` / `Space mN` | Add the next / previous matching word (Normal mode) |
+| `Space ma` | Add all matching words (Normal mode) |
 
 ## Window splits
 

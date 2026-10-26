@@ -19,6 +19,7 @@ local opts = {
 
     -- Web
     "html",
+    "emmet_language_server",
     "cssls",
     "jsonls",
     "tailwindcss",

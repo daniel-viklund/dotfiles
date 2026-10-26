@@ -38,7 +38,15 @@ require("lualine").setup({
 
   winbar = {
     lualine_x = { "branch", "diff", "diagnostics" },
-    lualine_z = { "mode" },
+    lualine_z = {
+      {
+        function()
+          local register = vim.fn.reg_recording()
+          return register ~= "" and ("Recording @" .. register) or ""
+        end,
+      },
+      "mode",
+    },
     lualine_c = {
       {
         "filename",
@@ -71,6 +79,16 @@ require("lualine").setup({
       },
     },
   },
+})
+
+vim.api.nvim_create_autocmd({ "RecordingEnter", "RecordingLeave" }, {
+  group = vim.api.nvim_create_augroup("MacroRecordingWinbar", { clear = true }),
+  -- RecordingLeave fires before reg_recording() is cleared.
+  callback = function()
+    vim.schedule(function()
+      require("lualine").refresh({ place = { "winbar" } })
+    end)
+  end,
 })
 
 -- Keep status information in the winbar without an empty bar at the bottom.
