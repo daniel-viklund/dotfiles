@@ -5,6 +5,12 @@ vim.pack.add({
 
 local navic = require("nvim-navic")
 
+-- Keep the entire winbar steady; the mode label already identifies the mode.
+local theme = vim.deepcopy(require("lualine.themes.gruvbox"))
+for _, mode in ipairs({ "insert", "visual", "replace", "command", "terminal", "inactive" }) do
+  theme[mode] = vim.deepcopy(theme.normal)
+end
+
 local function display_filename(name)
   if vim.bo.filetype == "oil" then
     local directory = require("oil").get_current_dir()
@@ -21,7 +27,7 @@ end
 
 require("lualine").setup({
   options = {
-    theme = "auto",
+    theme = theme,
     globalstatus = false,
 
     disabled_filetypes = {

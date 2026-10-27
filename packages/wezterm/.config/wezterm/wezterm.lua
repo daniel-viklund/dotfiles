@@ -44,18 +44,18 @@ config.warn_about_missing_glyphs = true
 -- COLORS / THEME
 --------------------------------------------------------------------------------
 -- Use a built-in scheme (hundreds available). Browse: https://wezfurlong.org/wezterm/colorschemes/
--- Black Metal Bathory, matching Neovim and tmux (including window padding).
+-- Gruvbox dark (medium contrast), matching Neovim, tmux, and Powerlevel10k.
 config.colors = {
-  foreground = '#f1f1f1',
-  background = '#000000',
-  cursor_bg = '#f1f1f1',
-  cursor_fg = '#000000',
-  cursor_border = '#f1f1f1',
-  selection_bg = '#222222',
-  selection_fg = '#f1f1f1',
-  split = '#505050',
-  ansi = { '#3E2018', '#5f8787', '#c1c1c1', '#888888', '#aaaaaa', '#999999', '#fbcb97', '#f1f1f1' },
-  brights = { '#505050', '#5f8787', '#c1c1c1', '#888888', '#aaaaaa', '#e78a43', '#fbcb97', '#f1f1f1' },
+  foreground = '#ebdbb2',
+  background = '#282828',
+  cursor_bg = '#ebdbb2',
+  cursor_fg = '#282828',
+  cursor_border = '#ebdbb2',
+  selection_bg = '#504945',
+  selection_fg = '#ebdbb2',
+  split = '#665c54',
+  ansi = { '#282828', '#cc241d', '#98971a', '#d79921', '#458588', '#b16286', '#689d6a', '#a89984' },
+  brights = { '#928374', '#fb4934', '#b8bb26', '#fabd2f', '#83a598', '#d3869b', '#8ec07c', '#ebdbb2' },
 }
 
 -- ...or define colors by hand. This overrides parts of the scheme above.
