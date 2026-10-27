@@ -278,7 +278,7 @@ loaded by the ToggleTerm configuration. On macOS/Linux, with ToggleTerm installe
 run the process integration checks using
 `nvim --headless -u NONE -l scripts/test-runner.lua`.
 
-## Python and C# tests
+## Python, C#, and Rust tests
 
 [Neotest](https://github.com/nvim-neotest/neotest) provides a test tree, colored
 pass/fail signs beside tests, failure diagnostics, and output windows. Its
@@ -304,7 +304,7 @@ Test shortcuts use `Space t`; build/run commands use `Space p`.
 
 Inside the test tree: `Enter` expands, `r` runs the selected test/file/directory,
 `o` shows output, `i` jumps to source, `d` debugs, and `?` shows help.
-Debugging requires Mason's `debugpy` adapter to be installed (`:Mason`).
+Python debugging requires Mason's `debugpy` adapter to be installed (`:Mason`).
 No pytest installation is needed for unittest projects. For pytest projects,
 install pytest into that project's environment using its package manager.
 
@@ -316,6 +316,14 @@ shortcuts above. `Space tt` runs tests under the containing `.sln`/`.slnx`
 solution, falling back to the `.csproj` directory for standalone projects.
 `Space td` uses the existing `coreclr` debugger configuration (including the
 Apple Silicon netcoredbg plugin on macOS).
+
+Rust uses [rustaceanvim's Neotest adapter](https://github.com/mrcjkb/rustaceanvim#neotest-integration)
+with Cargo (or cargo-nextest when installed). Keep `cargo` on `PATH`; Mason
+installs rust-analyzer and CodeLLDB. Open a Rust file and let rust-analyzer finish
+loading before using the same `Space t` shortcuts. `Space tt` runs tests under
+the Cargo project root and opens the summary; `Space td` uses CodeLLDB.
+Rustaceanvim manages the Rust LSP client, retaining `cargo check --workspace`
+on save. Cargo's `target` directories are excluded from test discovery.
 
 ## Install
 

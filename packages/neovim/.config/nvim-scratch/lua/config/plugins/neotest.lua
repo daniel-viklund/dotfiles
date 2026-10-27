@@ -5,6 +5,7 @@ vim.pack.add({
   "https://github.com/nvim-neotest/neotest",
   "https://github.com/nvim-neotest/neotest-python",
   "https://github.com/nsidorenco/neotest-vstest",
+  "https://github.com/mrcjkb/rustaceanvim",
 })
 
 -- Also recognize small unittest projects without pyproject.toml/setup.cfg.
@@ -33,6 +34,7 @@ end
 
 vim.g.neotest_vstest = { dap_settings = { type = "coreclr" }, broad_recursive_discovery = false }
 local dotnet = require("neotest-vstest")
+local rust = require("rustaceanvim.neotest")
 -- Prefer the whole solution, including modern .slnx files; standalone projects
 -- still work when there is no solution file above them.
 local match_root = require("neotest.lib").files.match_root_pattern
@@ -43,10 +45,10 @@ end
 
 neotest.setup({
   -- Detect the project's virtualenv and use pytest when installed, else unittest.
-  adapters = { adapter, dotnet },
+  adapters = { adapter, dotnet, rust },
   discovery = {
     filter_dir = function(name)
-      return not vim.tbl_contains({ ".venv", "venv", "__pycache__", "node_modules" }, name)
+      return not vim.tbl_contains({ ".venv", "venv", "__pycache__", "node_modules", "target" }, name)
     end,
   },
   summary = { open = "botright vsplit | vertical resize 45" },
@@ -61,7 +63,14 @@ local mappings = {
   { "tf", function() neotest.run.run(vim.fn.expand("%:p")) end, "Run test file" },
   { "tt", function()
     local path = vim.fn.expand("%:p")
-    local root = vim.bo.filetype == "cs" and dotnet_root(path) or python.get_root(path)
+    local root
+    if vim.bo.filetype == "rust" then
+      root = rust.root(path)
+    elseif vim.bo.filetype == "cs" then
+      root = dotnet_root(path)
+    else
+      root = python.get_root(path)
+    end
     neotest.run.run(root or vim.fn.getcwd())
     neotest.summary.open()
   end, "Run project tests" },

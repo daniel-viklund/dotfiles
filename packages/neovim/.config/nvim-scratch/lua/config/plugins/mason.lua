@@ -50,8 +50,8 @@ local opts = {
     "dockerls",
   },
 
-  -- Automatically enable servers installed through Mason.
-  automatic_enable = true,
+  -- rustaceanvim starts Rust itself; Mason still installs rust-analyzer.
+  automatic_enable = { exclude = { "rust_analyzer" } },
 }
 
 require("mason-lspconfig").setup(opts)

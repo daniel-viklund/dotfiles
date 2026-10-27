@@ -33,17 +33,20 @@ vim.lsp.config("vtsls", {
     },
 })
 
-vim.lsp.config("rust_analyzer", {
-    settings = {
-        ["rust-analyzer"] = {
-            checkOnSave = true,
-            check = {
-                command = "check",
-                workspace = true,
+-- rustaceanvim owns the Rust client and supplies Neotest discovery.
+vim.g.rustaceanvim = {
+    server = {
+        default_settings = {
+            ["rust-analyzer"] = {
+                checkOnSave = true,
+                check = {
+                    command = "check",
+                    workspace = true,
+                },
             },
         },
     },
-})
+}
 
 vim.lsp.config("gopls", {
     settings = {
