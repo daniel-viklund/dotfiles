@@ -6,6 +6,8 @@ vim.pack.add({
 })
 
 require("neo-tree").setup({
+  -- Give input and information popups a visible top border for their titles.
+  popup_border_style = "rounded",
   window = {
     -- Replace the current editor window; opening a file replaces the tree.
     position = "current",
