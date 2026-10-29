@@ -6,6 +6,8 @@ vim.pack.add({
 })
 
 require("neo-tree").setup({
+  -- Sessions restore scratch buffers without the tree state or its mappings.
+  auto_clean_after_session_restore = true,
   -- Give input and information popups a visible top border for their titles.
   popup_border_style = "rounded",
   window = {

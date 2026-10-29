@@ -74,6 +74,10 @@ to clear the screen. Shells also give up `Ctrl-h/j/k` to pane navigation.
 
 In Telescope, `Ctrl-v` opens the selected file in a vertical split to the right
 of the current buffer. Vertical splits open to the right by default.
+Inside `Space sf`, `Ctrl-h` toggles hidden files in Insert or Normal mode while
+keeping the search text. The title shows whether hidden files are enabled.
+Hidden files start disabled in every directory;
+Git-ignored files and `.git` contents stay excluded.
 
 ## Diagnostics
 
@@ -132,6 +136,8 @@ Press `Space e` to try Neo-tree in the current editor window. It fills the scree
 when there are no splits. `Enter` expands or collapses folders; on a file, it
 opens the file in place of the tree. `q` closes the tree, `Backspace` goes up a
 directory, and `?` shows its keybindings. The tree uses the editor background.
+Session restore removes stale Neo-tree buffers so they cannot leave an empty,
+unresponsive tree. Press `Space e` to reopen the file browser after restoring.
 
 Oil remains on `-` and still handles opening directories directly. Configure the
 trial in `lua/config/plugins/neo-tree.lua`; rename that file to
