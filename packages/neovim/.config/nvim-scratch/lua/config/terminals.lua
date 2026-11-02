@@ -148,8 +148,8 @@ function M.show(term, options)
   p.selected = term
   term.window = p.window
   vim.wo[p.window].winfixheight = true
-  vim.wo[p.window].number = false
-  vim.wo[p.window].relativenumber = false
+  api.nvim_set_option_value("number", false, { scope = "local", win = p.window })
+  api.nvim_set_option_value("relativenumber", false, { scope = "local", win = p.window })
   if options.focus == false then
     if p.editor and api.nvim_win_is_valid(p.editor) then api.nvim_set_current_win(p.editor) end
     vim.cmd.stopinsert()
@@ -179,6 +179,61 @@ function M.hide()
   p.window = nil
   if p.editor and api.nvim_win_is_valid(p.editor) then api.nvim_set_current_win(p.editor) end
   vim.cmd.stopinsert()
+end
+
+function M.open_file(with_position)
+  local name = vim.fn.expand("<cfile>")
+  local path = name ~= "" and vim.fn.findfile(name:gsub("\\ ", " "), vim.o.path, vim.v.count1) or ""
+  if path == "" then
+    vim.notify("File not found: " .. name, vim.log.levels.WARN)
+    return
+  end
+  path = vim.fn.fnamemodify(path, ":p")
+
+  local row, column
+  if with_position then
+    local text, cursor = api.nvim_get_current_line(), api.nvim_win_get_cursor(0)[2] + 1
+    local start = 1
+    while true do
+      local first, last = text:find(name, start, true)
+      if not first then break end
+      if last >= cursor then
+        local suffix = text:sub(last + 1)
+        row, column = suffix:match("^%s*%(%s*(%d+)%s*,%s*(%d+)")
+        if not row then row, column = suffix:match("^%s*:%s*(%d+)%s*:%s*(%d+)") end
+        row = row or suffix:match("^%s*%D+%s*(%d+)") or suffix:match("^%s+(%d+)")
+        break
+      end
+      start = last + 1
+    end
+  end
+
+  local p = panel()
+  local function editor(win)
+    return win and api.nvim_win_is_valid(win) and win ~= p.window
+      and api.nvim_win_get_config(win).relative == ""
+      and vim.bo[api.nvim_win_get_buf(win)].buftype == ""
+  end
+  local destination = editor(p.editor) and p.editor or nil
+  if not destination then
+    for _, win in ipairs(api.nvim_tabpage_list_wins(0)) do
+      if editor(win) then destination = win; break end
+    end
+  end
+  if destination then api.nvim_set_current_win(destination) else vim.cmd("aboveleft new") end
+  p.editor = api.nvim_get_current_win()
+  vim.cmd.edit(vim.fn.fnameescape(path))
+  -- Terminal window settings can be inherited by a split or saved in a session.
+  api.nvim_set_option_value("number", vim.go.number, { scope = "local", win = p.editor })
+  if not destination then
+    api.nvim_set_option_value("relativenumber", vim.go.relativenumber, { scope = "local", win = p.editor })
+  end
+  if row then
+    local line = math.max(1, math.min(tonumber(row), api.nvim_buf_line_count(0)))
+    local width = #api.nvim_buf_get_lines(0, line - 1, line, false)[1]
+    api.nvim_win_set_cursor(0, { line, math.max(0, math.min((tonumber(column) or 1) - 1, width)) })
+    vim.cmd("normal! zv")
+  end
 end
 
 function M.toggle()

@@ -221,6 +221,7 @@ remain selectable and display their exit code.
 | --- | --- |
 | `]t` / `[t` | Next / previous terminal |
 | `Space po` | Select the latest project output |
+| `gf` / `gF` (in the panel) | Open the file under the cursor in the editor; `gF` also follows line/column numbers |
 
 Use `jk` to leave terminal input mode, then use the Normal-mode shortcuts.
 `Ctrl-h/l` cycles terminal tabs in both Normal and terminal input mode;
@@ -480,6 +481,17 @@ adapter setup. Its filename makes it load after `mason.lua`.
   `target/debug/` (with `.exe` on Windows).
 - **Go:** Mason installs `delve`; `nvim-dap-go` supplies launch and test
   configurations. Install Go separately to build Delve and debug Go projects.
+- **Python:** Mason installs `debugpy`; `nvim-dap-python` supplies launch and
+  attach configurations. Install Python 3 separately, open a Python file, set
+  a breakpoint with `F9`, then press `F5` and select a launch configuration.
+  The debugger detects an activated virtualenv/Conda environment or a local
+  `.venv`, `venv`, `env`, or `.env` in the working directory or LSP root.
+  Run Neovim from your project directory so imports and relative paths resolve.
+  `Space dn` debugs the nearest test method; `Space df` debugs its test class.
+  Test debugging requires the Python Tree-sitter parser (already configured);
+  install pytest in your project environment when using pytest. The test runner
+  is detected from project configuration, defaulting to unittest. See
+  [nvim-dap-python](https://github.com/mfussenegger/nvim-dap-python) for custom runners.
 - **C# on Apple Silicon macOS:** uses the bundled native adapter from
   [netcoredbg-macOS-arm64.nvim](https://github.com/Cliffback/netcoredbg-macOS-arm64.nvim),
   including the existing DLL prompt and environment handling.

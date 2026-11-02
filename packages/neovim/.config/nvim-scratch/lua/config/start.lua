@@ -39,7 +39,7 @@ local function show_if_empty()
     list = false, spell = false, foldcolumn = "0", colorcolumn = "",
   }) do
     saved[option] = vim.wo[win][option]
-    vim.wo[win][option] = value
+    vim.api.nvim_set_option_value(option, value, { scope = "local", win = win })
   end
 
   local artwork = {
@@ -79,7 +79,7 @@ local function show_if_empty()
       vim.api.nvim_del_autocmd(resize)
       if vim.api.nvim_win_is_valid(win) then
         for option, value in pairs(saved) do
-          vim.wo[win][option] = value
+          vim.api.nvim_set_option_value(option, value, { scope = "local", win = win })
         end
       end
     end,

@@ -28,6 +28,10 @@ vim.api.nvim_create_autocmd("TermOpen", {
     local opts = { buffer = 0 }
     vim.keymap.set("t", [[<C-\>]], terminals.toggle, { buffer = 0, desc = "Toggle terminal panel" })
     vim.keymap.set("t", "jk", [[<C-\><C-n>]], opts)
+    vim.keymap.set("n", "gf", function() terminals.open_file(false) end,
+      { buffer = 0, desc = "Open file under cursor in editor" })
+    vim.keymap.set("n", "gF", function() terminals.open_file(true) end,
+      { buffer = 0, desc = "Open file at line under cursor in editor" })
     vim.keymap.set({ "n", "t" }, "<C-h>", function() terminals.cycle(-1) end,
       { buffer = 0, desc = "Previous terminal" })
     vim.keymap.set("t", "<C-j>", [[<Cmd>TmuxNavigateDown<CR>]], opts)

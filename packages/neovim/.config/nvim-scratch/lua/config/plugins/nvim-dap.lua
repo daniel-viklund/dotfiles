@@ -9,6 +9,7 @@ local plugins = {
   'https://github.com/rcarriga/nvim-dap-ui',
   'https://github.com/jay-babu/mason-nvim-dap.nvim',
   'https://github.com/leoluz/nvim-dap-go',
+  'https://github.com/mfussenegger/nvim-dap-python',
 }
 
 if apple_silicon then
@@ -38,7 +39,7 @@ local dap = require 'dap'
 local dapui = require 'dapui'
 local mason_dap = require 'mason-nvim-dap'
 
-local ensure_installed = { 'delve', 'codelldb' , 'debugpy'}
+local ensure_installed = { 'delve', 'codelldb', 'python' }
 if not apple_silicon then
   -- mason-nvim-dap calls the standard netcoredbg adapter "coreclr".
   ensure_installed[#ensure_installed + 1] = 'coreclr'
@@ -48,6 +49,8 @@ mason_dap.setup {
   ensure_installed = ensure_installed,
   automatic_installation = apple_silicon and { exclude = { 'coreclr' } } or true,
   handlers = {
+    -- dap-python owns the adapter and configurations, including after installation.
+    python = function() end,
     coreclr = function(config)
       -- Even a later Mason install must not replace the Apple Silicon adapter.
       if not apple_silicon then
@@ -56,6 +59,17 @@ mason_dap.setup {
     end,
   },
 }
+
+-- Keep the adapter's Python separate from the project's Python. dap-python
+-- detects VIRTUAL_ENV, CONDA_PREFIX, and local virtual environments at launch.
+local python_debugger = vim.fs.joinpath(
+  require('mason.settings').current.install_root_dir,
+  'packages', 'debugpy', 'venv',
+  vim.fn.has 'win32' == 1 and 'Scripts/python.exe' or 'bin/python'
+)
+require('dap-python').setup(python_debugger)
+vim.keymap.set('n', '<leader>dn', function() require('dap-python').test_method() end, { desc = 'Debug: Python Test Method' })
+vim.keymap.set('n', '<leader>df', function() require('dap-python').test_class() end, { desc = 'Debug: Python Test Class' })
 
 -- Dap UI setup
 -- For more information, see |:help nvim-dap-ui|

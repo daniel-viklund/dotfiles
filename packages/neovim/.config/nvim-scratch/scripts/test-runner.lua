@@ -18,6 +18,8 @@ end
 
 local function main()
   vim.o.lines = 50
+  vim.o.columns = 300
+  vim.opt.number = true
   fn.mkdir(temporary, "p")
   temporary = assert(vim.uv.fs_realpath(temporary))
   vim.g.project_runner_launch_dir = temporary .. "/project"
@@ -42,8 +44,11 @@ local function main()
   local toggle_all = fn.maparg([[<C-\>]], "n", false, true).callback
   assert(fn.maparg("<leader>tt", "n") == "", "Old terminal toggle is still mapped")
   local original_shell = vim.o.shell
+  local initial_editor = api.nvim_get_current_win()
   vim.o.shell = "/bin/sh"
   toggle_all()
+  assert(vim.wo[initial_editor].number, "Opening a shell disabled editor line numbers")
+  assert(vim.go.number, "Opening a shell changed the default line number setting")
   local first = assert(require("toggleterm.terminal").get(1, true))
   assert(first:is_open(), "First toggle did not open terminal 1")
   local first_job = first.job_id
@@ -199,6 +204,66 @@ while True:
   assert(not hidden:is_open(), "Restored a terminal that was already hidden")
   assert(shell.job_id == shell_job, "Restoring restarted the shell")
   assert(read(project .. "/runs") == project .. "/app", "Restoring reran the project")
+
+  -- File navigation leaves the terminal and its running process in the panel.
+  local jump_file = project .. "/LobbyService.cs"
+  fn.writefile(fn["repeat"]({ string.rep("x", 90) }, 130), jump_file)
+  local printed_file = jump_file:gsub(" ", "\\ ")
+  local references = { printed_file .. "(119,70): error WHITESPACE", printed_file .. ":11:7: error" }
+  panel.show(shell)
+  fn.chansend(shell.job_id, table.concat(references, "\n") .. "\n")
+  wait_for("file references in terminal", function()
+    return table.concat(api.nvim_buf_get_lines(shell.bufnr, 0, -1, false), "\n"):find(references[2], 1, true)
+  end)
+  local terminal_window = shell.window
+  local function jump(key, reference)
+    api.nvim_set_current_win(terminal_window)
+    vim.cmd.stopinsert()
+    for index, line in ipairs(api.nvim_buf_get_lines(shell.bufnr, 0, -1, false)) do
+      if line:find(reference, 1, true) then
+        api.nvim_win_set_cursor(terminal_window, { index, 1 })
+        local mapping = fn.maparg(key, "n", false, true)
+        assert(mapping.buffer == 1 and mapping.callback, "Terminal file mapping is missing")
+        mapping.callback()
+        assert(api.nvim_get_current_win() == source_window, "File did not open in the editor")
+        assert(api.nvim_buf_get_name(0) == jump_file, "Opened the wrong file")
+        assert(vim.wo.number, "Opening a terminal file disabled editor line numbers")
+        assert(api.nvim_win_get_buf(terminal_window) == shell.bufnr, "File replaced the terminal panel")
+        assert(vim.uv.kill(fn.jobpid(shell_job), 0) == 0, "File navigation stopped the shell")
+        return
+      end
+    end
+    error("File reference not found")
+  end
+  -- A session may have saved the former terminal window settings.
+  api.nvim_set_option_value("number", false, { scope = "local", win = source_window })
+  jump("gf", references[1])
+  jump("gF", references[1])
+  assert(vim.deep_equal(api.nvim_win_get_cursor(0), { 119, 69 }), "Did not follow .NET line/column")
+  jump("gF", references[2])
+  assert(vim.deep_equal(api.nvim_win_get_cursor(0), { 11, 6 }), "Did not follow colon line/column")
+
+  -- With only a start screen available, the new editor must not inherit terminal options.
+  edit(other .. "/main.txt")
+  api.nvim_buf_delete(fn.bufnr(jump_file), { force = true })
+  vim.cmd.tabnew()
+  vim.bo.buftype = "nofile"
+  api.nvim_set_option_value("number", false, { scope = "local", win = 0 })
+  panel.show(shell)
+  vim.cmd.stopinsert()
+  for index, line in ipairs(api.nvim_buf_get_lines(shell.bufnr, 0, -1, false)) do
+    if line:find(references[1], 1, true) then
+      api.nvim_win_set_cursor(0, { index, 1 })
+      fn.maparg("gF", "n", false, true).callback()
+      break
+    end
+  end
+  assert(api.nvim_buf_get_name(0) == jump_file, "Fallback editor did not open the file")
+  assert(vim.wo.number, "New editor inherited hidden terminal line numbers")
+  assert(not vim.wo.winfixheight, "New editor inherited fixed terminal height")
+  vim.cmd("tabclose!")
+  api.nvim_set_current_win(source_window)
+  edit(other .. "/main.txt")
   panel.dispose(shell)
   panel.dispose(hidden)
   api.nvim_set_current_win(source_window)
