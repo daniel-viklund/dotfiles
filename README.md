@@ -52,3 +52,37 @@ The original configs and Git histories are preserved on this Mac under
 `~/.local/state/dotfiles/backups/20261007-134101-3bc4e68a/`, along with the
 original recovery script and migration notes. Keep this backup private.
 Kitty and the older `~/.config/nvim` remain separate.
+
+## Windows with Ubuntu on WSL
+
+This machine uses `Ubuntu-24.04`, with Linux user `daniel` and zsh as the login
+shell. The working repository is `~/Documents/Github/daniel-viklund/dotfiles`
+inside Ubuntu. Stow links the `zsh`, `neovim`, and `tmux` packages into Linux home.
+Hammerspoon is only used on macOS.
+
+Windows WezTerm loads this repository's WezTerm config through
+`//wsl.localhost/Ubuntu-24.04/home/daniel/Documents/Github/daniel-viklund/dotfiles/`.
+The Windows wrapper at `C:\Users\Daniel\.config\wezterm\wezterm.lua` launches
+Ubuntu and attaches to (or creates) tmux session `main`. The previous Windows
+config is saved alongside it as `wezterm.lua.backup-*`.
+
+- Launch WezTerm from Start, or run `wsl` in PowerShell for a plain zsh shell.
+- Run `nvim` in Ubuntu; `.zshrc` selects the `nvim-scratch` configuration.
+- tmux uses `Ctrl-a` as its prefix: then `c` for a window, `d` to detach,
+  or `[` for copy mode. `Alt-1` through `Alt-9` select tmux windows in WezTerm.
+- The WSL tmux copy binding uses `clip.exe` for the Windows clipboard.
+- Powerlevel10k is installed under `~/.local/share/powerlevel10k`.
+- Windows has the MesloLGS NF font installed for the current user.
+- Linux Git uses Windows GitHub CLI as its GitHub credential helper.
+  The `gh` command is also a wrapper around the Windows CLI.
+
+Set your Linux password privately from PowerShell before using `sudo`:
+
+```powershell
+wsl -d Ubuntu-24.04 -u root -- passwd daniel
+```
+
+The installed tools include Neovim 0.12.6, tmux 3.8, tree-sitter 0.27.1,
+LazyGit 0.66.2, Node 24, Rust stable, Go, and .NET LTS. Neovim and Node live
+under `/opt` and tmux under `/usr/local`; update these installations separately
+from Ubuntu packages. Language tools are managed by Mason.

@@ -30,7 +30,7 @@ tmuxpick () {
 # source <(ng completion script)
 
 # Enable Powerlevel10k theme
-for theme in /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme /usr/local/share/powerlevel10k/powerlevel10k.zsh-theme; do
+for theme in "$HOME/.local/share/powerlevel10k/powerlevel10k.zsh-theme" /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme /usr/local/share/powerlevel10k/powerlevel10k.zsh-theme; do
   if [[ -r "$theme" ]]; then source "$theme"; break; fi
 done
 unset theme

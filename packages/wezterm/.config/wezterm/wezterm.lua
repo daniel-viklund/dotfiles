@@ -152,7 +152,9 @@ config.inactive_pane_hsb = {
 --------------------------------------------------------------------------------
 -- By default WezTerm launches your login shell. Override if you like:
 -- config.default_prog = { 'bash', '-l' }
-config.default_prog = wezterm.target_triple:find('windows') and { 'powershell' }         -- Windows PowerShell
+if wezterm.target_triple:find('windows') then
+  config.default_prog = { 'wsl.exe', '-d', 'Ubuntu-24.04', '--cd', '~' }
+end
 -- config.default_cwd = wezterm.home_dir
 
 -- On Windows, choose the default shell WezTerm spawns:
