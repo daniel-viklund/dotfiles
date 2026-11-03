@@ -1,0 +1,8 @@
+local.py
+settings.json
+clipboard.json
+mcp.json
+keyhac-error.log
+*.lock
+*.token
+site-packages/

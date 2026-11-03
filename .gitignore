@@ -7,6 +7,7 @@ __pycache__/
 .env.*
 local.zsh
 local.lua
+local.py
 /packages/tmux/.config/tmux/plugins/
 /packages/hammerspoon/.hammerspoon/Spoons/
 /packages/neovim/.config/nvim-scratch/windows-path.txt
