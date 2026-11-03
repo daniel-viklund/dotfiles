@@ -35,6 +35,13 @@ end
 vim.g.neotest_vstest = { dap_settings = { type = "coreclr" }, broad_recursive_discovery = false }
 local dotnet = require("neotest-vstest")
 local rust = require("rustaceanvim.neotest")
+local rust_root = rust.root
+rust.root = function(path)
+  -- Neotest can resume discovery in a fast event; Rust root detection uses
+  -- Vimscript APIs, so move its coroutine back onto Neovim's main loop.
+  if vim.in_fast_event() then require("nio").scheduler() end
+  return rust_root(path)
+end
 -- Prefer the whole solution, including modern .slnx files; standalone projects
 -- still work when there is no solution file above them.
 local match_root = require("neotest.lib").files.match_root_pattern
