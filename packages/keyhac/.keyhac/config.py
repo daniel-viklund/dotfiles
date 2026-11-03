@@ -59,12 +59,11 @@ def _identity(window, mac):
 
 def configure(keymap):
     mac = keymap.platform == "mac"
-    if not mac:
-        # Match Mac modifier positions: Ctrl, Option, Command maps to
-        # Ctrl, physical Win, physical Alt. Keep right Alt available as AltGr.
-        keymap.replace_key("LAlt", "LWin")
-        keymap.replace_key("LWin", "LAlt")
-    app_mod = "Ctrl-Cmd" if mac else "Ctrl-Win"
+    # Match physical shortcut positions through bindings, without remapping
+    # the keys globally. Use left Alt on Windows to leave AltGr available.
+    window_mod = "Ctrl-Alt" if mac else "Ctrl-Win"
+    app_mod = "Ctrl-Cmd" if mac else "Ctrl-LAlt"
+    reload_key = "Ctrl-Cmd-Alt-R" if mac else "Ctrl-LAlt-Win-R"
     label = "⌃⌘" if mac else "Ctrl+Alt+"
     keys = keymap.define_keytable(focus_path_pattern="*")
 
@@ -74,10 +73,10 @@ def configure(keymap):
         if pop:
             pop("dotfiles", message, 2.0)
 
-    keys["Ctrl-Alt-H"] = SnapWindow("left")
-    keys["Ctrl-Alt-L"] = SnapWindow("right")
+    keys[f"{window_mod}-H"] = SnapWindow("left")
+    keys[f"{window_mod}-L"] = SnapWindow("right")
     # Fill the usable screen, without entering macOS full-screen mode.
-    keys["Ctrl-Alt-K"] = SnapWindow("full")
+    keys[f"{window_mod}-K"] = SnapWindow("full")
 
     # Remember discovery order rather than z-order: activating a window must
     # not reorder the cycle and leave it bouncing between just two windows.
@@ -107,7 +106,7 @@ def configure(keymap):
             target.restore()
         target.activate()
 
-    keys["Ctrl-Alt-J"] = cycle_app_windows
+    keys[f"{window_mod}-J"] = cycle_app_windows
 
     # Match Hammerspoon's shared defaults and optional private overrides.
     apps = {"F": "Finder", "S": "Spotify"}
@@ -122,10 +121,10 @@ def configure(keymap):
             keys[f"{app_mod}-{key}"] = _launcher(spec, mac)
 
     for key in string.digits + string.ascii_uppercase:
-        # Preserve Ctrl+Cmd+Q (Mac lock screen), and leave Ctrl+Win+Q alone.
+        # Leave Q unbound; Ctrl+Cmd+Q locks the screen on Mac.
         if key != "Q" and not apps.get(key):
             keys[f"{app_mod}-{key}"] = lambda key=key: alert(
                 f"{label}{key} is not bound to an app")
 
-    keys[f"{app_mod}-Alt-R"] = keymap.reload_config
+    keys[reload_key] = keymap.reload_config
     alert("Config loaded" + (" (+local)" if local_loaded else ""))
