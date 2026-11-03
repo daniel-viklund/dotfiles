@@ -5,13 +5,20 @@ same `~/.keyhac/config.py`. Install Keyhac on the host OS, including Windows
 when your terminal runs in WSL. The Hammerspoon config is kept as a fallback;
 run only one of the two apps at a time to avoid overlapping shortcuts.
 
-| Shortcut | Action |
-| --- | --- |
-| `Ctrl+Alt+H` / `Ctrl+Alt+L` | Left / right half of the current monitor |
-| `Ctrl+Alt+K` | Fill the current monitor's work area |
-| `Ctrl+Alt+J` | Cycle standard windows of the focused app, restoring minimized windows |
-| `Ctrl+Cmd+letter` (Mac), `Ctrl+Win+letter` (Windows) | Launch or focus an app |
-| `Ctrl+Cmd+Alt+R` (Mac), `Ctrl+Win+Alt+R` (Windows) | Reload config and local overrides |
+| Action | Mac | Windows (physical left keys) |
+| --- | --- | --- |
+| Left / right half of the current monitor | `Ctrl+Option+H` / `Ctrl+Option+L` | `Ctrl+Win+H` / `Ctrl+Win+L` |
+| Fill the current monitor's work area | `Ctrl+Option+K` | `Ctrl+Win+K` |
+| Cycle standard windows of the focused app, restoring minimized windows | `Ctrl+Option+J` | `Ctrl+Win+J` |
+| Launch or focus an app | `Ctrl+Cmd+letter` | `Ctrl+Alt+letter` |
+| Reload config and local overrides | `Ctrl+Cmd+Option+R` | `Ctrl+Alt+Win+R` |
+
+On Windows, Keyhac swaps **left Alt and left Win** globally while it runs,
+matching the physical positions of Command and Option on a Mac keyboard.
+The bindings in `config.py` use the logical names after this swap: physical
+left Alt becomes `Win`, and physical left Win becomes `Alt`. This also changes
+those keys in other applications and Windows shortcuts. Right Alt (AltGr) and
+right Win keep their original behavior. The Mac mapping stays the same.
 
 `F` opens Finder / File Explorer, and `S` opens Spotify. Other letters and
 digits display an unbound-key alert. `Q` is left alone to preserve the Mac's

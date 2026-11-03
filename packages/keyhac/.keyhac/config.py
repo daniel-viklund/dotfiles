@@ -59,8 +59,13 @@ def _identity(window, mac):
 
 def configure(keymap):
     mac = keymap.platform == "mac"
+    if not mac:
+        # Match Mac modifier positions: Ctrl, Option, Command maps to
+        # Ctrl, physical Win, physical Alt. Keep right Alt available as AltGr.
+        keymap.replace_key("LAlt", "LWin")
+        keymap.replace_key("LWin", "LAlt")
     app_mod = "Ctrl-Cmd" if mac else "Ctrl-Win"
-    label = "⌃⌘" if mac else "Ctrl+Win+"
+    label = "⌃⌘" if mac else "Ctrl+Alt+"
     keys = keymap.define_keytable(focus_path_pattern="*")
 
     def alert(message):
