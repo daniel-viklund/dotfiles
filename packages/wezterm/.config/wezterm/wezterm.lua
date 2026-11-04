@@ -173,12 +173,11 @@ config.animation_fps = 60
 -- These ADD to (and can override) the built-in defaults. See defaults at:
 -- https://wezfurlong.org/wezterm/config/default-keys.html
 config.keys = {
-  -- Paste a newline for multiline input without triggering tmux's Ctrl+j navigation.
+  -- Send Option/Alt+Enter for CLI multiline input, including through tmux.
+  -- A pasted newline can be swallowed by the CLI's paste handling.
   {
     key = 'Enter', mods = 'SHIFT',
-    action = wezterm.action_callback(function(_, pane)
-      pane:send_paste('\n')
-    end),
+    action = wezterm.action.SendString '\x1b\r',
   },
 
   -- Split panes
