@@ -51,10 +51,14 @@ telescope.load_extension("ui-select")
 
 local builtin = require("telescope.builtin")
 
-local function find_files(opts)
+local function search_with_hidden_toggle(picker, title, opts)
   local picker_opts = vim.deepcopy(opts)
-  picker_opts.prompt_title = opts.hidden and "Find Files (hidden on)" or "Find Files (hidden off)"
+  picker_opts.prompt_title = title .. (opts.hidden and " (hidden on)" or " (hidden off)")
   picker_opts.file_ignore_patterns = { "^%.git/", "/%.git/" }
+  if picker ~= "find_files" then
+    -- Exclude Git metadata from the scan, including when hidden files are on.
+    picker_opts.additional_args = { "--glob", "!**/.git/**" }
+  end
   picker_opts.attach_mappings = function(_, map)
     map({ "i", "n" }, "<C-h>", function(prompt_bufnr)
       local state = require("telescope.actions.state")
@@ -63,18 +67,26 @@ local function find_files(opts)
       next_opts.default_text = state.get_current_line()
       next_opts.cwd = state.get_current_picker(prompt_bufnr).cwd
       require("telescope.actions").close(prompt_bufnr)
-      find_files(next_opts)
+      search_with_hidden_toggle(picker, title, next_opts)
     end, { desc = "Toggle hidden files" })
     return true
   end
-  builtin.find_files(picker_opts)
+  builtin[picker](picker_opts)
 end
 
 vim.keymap.set('n', '<leader>sf', function()
-  find_files({ hidden = false })
+  search_with_hidden_toggle("find_files", "Find Files", { hidden = false })
 end, { desc = 'Telescope find files' })
-vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = 'Telescope live grep' })
-vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = 'Search word under cursor' })
+vim.keymap.set('n', '<leader>sg', function()
+  search_with_hidden_toggle("live_grep", "Live Grep", { hidden = false })
+end, { desc = 'Telescope live grep' })
+vim.keymap.set('n', '<leader>sw', function()
+  search_with_hidden_toggle("grep_string", "Grep Word", {
+    hidden = false,
+    -- Keep the original word when the picker is reopened by the toggle.
+    search = vim.fn.expand("<cword>"),
+  })
+end, { desc = 'Search word under cursor' })
 vim.keymap.set('n', '<leader>sb', builtin.buffers, { desc = 'Search open buffers' })
 vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = 'Search help' })
 vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = 'Resume last search' })
