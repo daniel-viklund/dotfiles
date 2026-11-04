@@ -58,6 +58,13 @@ def _identity(window, mac):
 
 
 def configure(keymap):
+    # These shortcuts do not need clipboard history, in memory or on disk.
+    history = keymap.clipboard_history
+    history.persist = False
+    history.max_items = 0
+    for entry in list(history.entries()):
+        history.remove(entry)
+
     mac = keymap.platform == "mac"
     # Match physical shortcut positions through bindings, without remapping
     # the keys globally. Use left Alt on Windows to leave AltGr available.
