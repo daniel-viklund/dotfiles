@@ -21,6 +21,13 @@ vim.diagnostic.config({
 })
 
 -- Server-specific configuration
+vim.lsp.config("powershell_es", {
+    on_init = function(client)
+        -- PowerShell semantic tokens can become stale and override Tree-sitter.
+        client.server_capabilities.semanticTokensProvider = nil
+    end,
+})
+
 vim.lsp.config("vtsls", {
     settings = {
         typescript = {
