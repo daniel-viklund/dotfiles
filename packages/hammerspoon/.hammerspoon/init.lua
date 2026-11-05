@@ -70,6 +70,7 @@ end)
 -- defaults shared by every machine
 local apps = {
 	F = "Finder",
+	[","] = "GitHub Copilot",
 	S = "Spotify",
 }
 

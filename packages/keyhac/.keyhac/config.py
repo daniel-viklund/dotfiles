@@ -116,7 +116,7 @@ def configure(keymap):
     keys[f"{window_mod}-J"] = cycle_app_windows
 
     # Match Hammerspoon's shared defaults and optional private overrides.
-    apps = {"F": "Finder", "S": "Spotify"}
+    apps = {"F": "Finder", "Comma": "GitHub Copilot", "S": "Spotify"}
     local_path = Path(keymap.config_path).with_name("local.py")
     local_loaded = local_path.is_file()
     if local_loaded:

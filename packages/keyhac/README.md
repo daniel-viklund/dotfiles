@@ -20,7 +20,8 @@ available for typing. Mac shortcuts stay the same. After updating a Windows
 installation that used the old global swap, replace its config and choose
 **Reload Config** from Keyhac's tray menu to clear the old remaps.
 
-`F` opens Finder / File Explorer, and `S` opens Spotify. Other letters and
+`F` opens Finder / File Explorer, `,` opens GitHub Copilot, and `S` opens
+Spotify. Other letters and
 digits display an unbound-key alert. `Q` is left alone to preserve the Mac's
 lock shortcut. Windows can reserve some combinations before Keyhac sees them.
 Window cycling uses stable discovery order, reset on config reload, rather
@@ -73,7 +74,7 @@ shortcut validation is performed by setting this up on the Mac.
 ## Local overrides
 
 `~/.keyhac/local.py` stays outside Git. It defines an `APPS` dictionary merged
-over `F` and `S`; see `local.example.py`. `PLATFORM` is available for OS-specific
+over `F`, `Comma`, and `S`; see `local.example.py`. `PLATFORM` is available for OS-specific
 app targets. Changes take effect with the reload shortcut or **Reload Config**
 in Keyhac's menu. Disabled launchers get the same unbound-key alert as any
 other unused letter. Invalid Python keeps Keyhac's previous config active and
