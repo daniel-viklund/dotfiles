@@ -79,6 +79,20 @@ keeping the search text. The title shows whether hidden files are enabled.
 Hidden files start disabled in every directory;
 Git-ignored files and `.git` contents stay excluded.
 
+## LazyGit workspaces
+
+`Space gg` reopens the last selected repo in the workspace, initially using the
+current file's repo (or working-directory repo without a file). Selection is
+remembered per workspace until Neovim exits. Inside the popup, `Alt+[` and `Alt+]` (Option on Mac)
+cycle through the workspace repo and its immediate child repos, alphabetically.
+Gitignored repos and Git worktrees are included; no file needs to be opened first.
+The popup title shows the selected repo and its position.
+
+Each repo retains its own running LazyGit session and selection when switching.
+LazyGit's `q` exits the selected session and closes the popup; other repo sessions
+remain available until Neovim exits. The workspace is the working directory's
+Git root, or the selected file's repo when it is outside that workspace.
+
 ## Diagnostics
 
 Diagnostics appear inline after the affected code, with signs and underlines.

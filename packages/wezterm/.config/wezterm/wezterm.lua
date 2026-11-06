@@ -173,6 +173,10 @@ config.animation_fps = 60
 -- These ADD to (and can override) the built-in defaults. See defaults at:
 -- https://wezfurlong.org/wezterm/config/default-keys.html
 config.keys = {
+  -- CSI-u avoids confusing Alt brackets with terminal CSI/OSC prefixes.
+  { key = '[', mods = 'ALT', action = wezterm.action.SendString '\x1b[91;3u' },
+  { key = ']', mods = 'ALT', action = wezterm.action.SendString '\x1b[93;3u' },
+
   -- Send Option/Alt+Enter for CLI multiline input, including through tmux.
   -- A pasted newline can be swallowed by the CLI's paste handling.
   {
