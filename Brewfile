@@ -23,6 +23,4 @@ brew "tree-sitter-cli"
 # https://formulae.brew.sh/cask/wezterm
 # https://formulae.brew.sh/cask/font-meslo-for-powerlevel10k
 cask "wezterm"
-cask "hammerspoon"
-cask "crftwr/tap/keyhac"
 cask "font-meslo-for-powerlevel10k"

@@ -13,9 +13,7 @@ for entry in \
   'zsh:.zshrc' \
   'neovim:.config/nvim-scratch/init.lua' \
   'tmux:.config/tmux/tmux.conf' \
-  'wezterm:.config/wezterm/wezterm.lua' \
-  'keyhac:.keyhac/config.py' \
-  'hammerspoon:.hammerspoon/init.lua'
+  'wezterm:.config/wezterm/wezterm.lua'
 do
   package=${entry%%:*}
   anchor=${entry#*:}

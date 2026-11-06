@@ -1,6 +1,6 @@
 # Dotfiles
 
-Zsh/Powerlevel10k, Neovim (`nvim-scratch`), WezTerm, tmux, Keyhac, and Hammerspoon.
+Zsh/Powerlevel10k, Neovim (`nvim-scratch`), WezTerm, and tmux.
 GNU Stow links `packages/` into your home directory. Edit configs at their usual
 paths and commit changes in this repo.
 
@@ -11,8 +11,8 @@ From the repo:
 
 ```sh
 brew install stow
-stow -n -v -d packages -t "$HOME" zsh neovim tmux wezterm keyhac hammerspoon
-stow -d packages -t "$HOME" zsh neovim tmux wezterm keyhac hammerspoon
+stow -n -v -d packages -t "$HOME" zsh neovim tmux wezterm
+stow -d packages -t "$HOME" zsh neovim tmux wezterm
 ```
 
 The first Stow command previews changes. If existing configs conflict, move
@@ -64,22 +64,15 @@ After reverting, open a fresh shell and restart Neovim.
 
 - `~/.config/zsh/local.zsh`: credentials, work helpers, and machine overrides.
   Keep it outside Git with permissions `600`; an example is in `examples/`.
-- `~/.hammerspoon/local.lua`: local app shortcuts, ignored by Git. Start from
-  `local.example.lua` in that directory.
-- `~/.keyhac/local.py`: private app shortcuts for Keyhac, ignored by Git.
-  Start from `packages/keyhac/.keyhac/local.example.py`.
 - Git settings, SSH keys, and login sessions are managed locally, outside this repo.
 
-Downloaded tmux plugins, Hammerspoon Spoons, and local settings are ignored by
+Downloaded tmux plugins and local settings are ignored by
 Git. Git ignores control commits; Stow manages links to the package contents.
 
 ## Fresh-machine extras
 
 - Install TPM with `git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm`,
   then press `Ctrl-a`, followed by capital `I`, inside tmux to install plugins.
-- Launch Keyhac and grant macOS Accessibility permission. See the
-  [Keyhac setup](packages/keyhac/README.md) for matching Mac/Windows shortcuts.
-  Hammerspoon remains available as a fallback; run only one at a time.
 - See [Neovim's README](packages/neovim/.config/nvim-scratch/readme.md) for its
   language tools and existing macOS/Windows bootstrap scripts.
 - Transfer required private settings and SSH keys separately.
@@ -94,7 +87,6 @@ Kitty and the older `~/.config/nvim` remain separate.
 This machine uses `Ubuntu-24.04`, with Linux user `daniel` and zsh as the login
 shell. The working repository is `~/Documents/Github/daniel-viklund/dotfiles`
 inside Ubuntu. Stow links the `zsh`, `neovim`, and `tmux` packages into Linux home.
-Hammerspoon is only used on macOS.
 
 Windows WezTerm loads this repository's WezTerm config through
 `//wsl.localhost/Ubuntu-24.04/home/daniel/Documents/Github/daniel-viklund/dotfiles/`.
