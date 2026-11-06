@@ -35,6 +35,7 @@ config.font = wezterm.font 'MesloLGS NF'
 config.font_size = 16.0            -- default 12.0 (macOS default is often perceived larger due to DPI)
 config.line_height = 1          -- multiplier; 1.1–1.2 gives more breathing room
 config.cell_width = 1           -- horizontal cell scaling
+config.freetype_load_flags = 'NO_HINTING'
 -- config.freetype_load_target = 'Normal'   -- 'Normal' | 'Light' | 'Mono' | 'HorizontalLcd'
 -- config.freetype_render_target = 'Normal'
 -- config.harfbuzz_features = { 'calt=1', 'clig=1', 'liga=1' }  -- ligatures on (default). Disable with =0.
