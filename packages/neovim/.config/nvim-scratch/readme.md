@@ -88,6 +88,15 @@ cycle through the workspace repo and its immediate child repos, alphabetically.
 Gitignored repos and Git worktrees are included; no file needs to be opened first.
 The popup title shows the selected repo and its position.
 
+Press `e` in the Files panel to open the selected file in the parent Neovim
+editor at its first unstaged change, or first staged change if none are unstaged.
+Files without a textual diff open at line 1.
+To jump to a specific diff line, press Enter to focus the diff, use `a`
+to switch from hunk to line selection if needed, select the line with `j`/`k`,
+then press `e`. The popup hides without stopping LazyGit; `Space gg`
+resumes the same session. File paths are resolved against LazyGit's current repo.
+Other LazyGit settings are preserved.
+
 Each repo retains its own running LazyGit session and selection when switching.
 LazyGit's `q` exits the selected session and closes the popup; other repo sessions
 remain available until Neovim exits. The workspace is the working directory's
