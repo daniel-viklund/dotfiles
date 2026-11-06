@@ -1,19 +1,17 @@
 vim.pack.add({
-  { src = "https://github.com/morhetz/gruvbox.git", name = "gruvbox" },
+  { src = "https://github.com/projekt0n/github-nvim-theme", name = "github-theme" },
 })
 
 vim.opt.background = "dark"
-vim.g.gruvbox_contrast_dark = "medium"
--- Git signs inherit Gruvbox's sign highlights, including their background.
-vim.g.gruvbox_sign_column = "dark0"
--- Preserve syntax foregrounds when selecting text instead of reversing them.
-vim.g.gruvbox_invert_selection = 0
-vim.cmd.colorscheme("gruvbox")
+require("github-theme").setup({})
+vim.cmd('colorscheme github_dark_default')
 
 -- Blend gutters and popup surfaces into the editor background.
 local function match_popup_backgrounds()
+  if not (vim.g.colors_name or ""):match("^github_") then return end
   local normal = vim.api.nvim_get_hl(0, { name = "Normal", link = false })
-  vim.api.nvim_set_hl(0, "Visual", { bg = "#504945", ctermbg = 239, reverse = false })
+  local spec = require("github-theme.spec").load(vim.g.colors_name)
+  vim.api.nvim_set_hl(0, "Visual", { bg = spec.sel0, reverse = false })
   vim.api.nvim_set_hl(0, "VisualNOS", { link = "Visual" })
   for _, name in ipairs({
     "SignColumn", "FoldColumn",
@@ -27,12 +25,10 @@ local function match_popup_backgrounds()
     vim.api.nvim_set_hl(0, name, highlight)
   end
 
-  -- The original Vim theme does not style Neovim's WinSeparator. Status-line
-  -- fill also needs explicit colors to avoid a reversed bright terminal divider.
+  -- Keep separators subtle and status-line fill on the shared background.
   for _, name in ipairs({ "WinSeparator", "VertSplit", "StatusLine", "StatusLineNC" }) do
     vim.api.nvim_set_hl(0, name, {
-      fg = "#665c54", bg = normal.bg,
-      ctermfg = 241, ctermbg = normal.ctermbg,
+      fg = spec.palette.border.muted, bg = normal.bg,
       reverse = false,
     })
   end

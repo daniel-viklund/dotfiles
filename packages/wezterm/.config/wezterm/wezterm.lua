@@ -45,18 +45,18 @@ config.warn_about_missing_glyphs = true
 -- COLORS / THEME
 --------------------------------------------------------------------------------
 -- Use a built-in scheme (hundreds available). Browse: https://wezfurlong.org/wezterm/colorschemes/
--- Gruvbox dark (medium contrast), matching Neovim, tmux, and Powerlevel10k.
+-- GitHub Dark Default, matching Neovim, tmux, and Powerlevel10k.
 config.colors = {
-  foreground = '#ebdbb2',
-  background = '#282828',
-  cursor_bg = '#ebdbb2',
-  cursor_fg = '#282828',
-  cursor_border = '#ebdbb2',
-  selection_bg = '#504945',
-  selection_fg = '#ebdbb2',
-  split = '#665c54',
-  ansi = { '#282828', '#cc241d', '#98971a', '#d79921', '#458588', '#b16286', '#689d6a', '#a89984' },
-  brights = { '#928374', '#fb4934', '#b8bb26', '#fabd2f', '#83a598', '#d3869b', '#8ec07c', '#ebdbb2' },
+  foreground = '#e6edf3',
+  background = '#0d1117',
+  cursor_bg = '#e6edf3',
+  cursor_fg = '#0d1117',
+  cursor_border = '#e6edf3',
+  selection_bg = '#17335a',
+  selection_fg = '#e6edf3',
+  split = '#21262d',
+  ansi = { '#0d1117', '#ff7b72', '#3fb950', '#d29922', '#58a6ff', '#bc8cff', '#76e3ea', '#b1bac4' },
+  brights = { '#161b22', '#ffa198', '#56d364', '#e3b341', '#79c0ff', '#d2a8ff', '#b3f0ff', '#b1bac4' },
 }
 
 -- ...or define colors by hand. This overrides parts of the scheme above.

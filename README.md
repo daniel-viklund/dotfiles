@@ -24,6 +24,24 @@ On a fresh Mac, `brew bundle --file=Brewfile` installs the tools and apps too.
 It is unnecessary on the current Mac, where WezTerm and the Meslo font were
 installed outside Homebrew and could conflict with a bundle installation.
 
+## Theme trial
+
+Neovim, its winbar, WezTerm, tmux, and Powerlevel10k use GitHub Dark Default
+(`github_dark_default` from `projekt0n/github-nvim-theme`). Popup and gutter
+backgrounds stay blended with the editor; terminal backgrounds match throughout.
+WezTerm reloads automatically. Open a fresh shell and restart Neovim to apply it;
+reload tmux with `Ctrl-a`, then `r`.
+
+On this Mac, restore the previous Gruvbox setup with:
+
+```sh
+/Users/danielviklund/.local/state/dotfiles/theme-trials/20261106-180720/revert.sh
+```
+
+The backup directory contains the original theme files and a reverse patch.
+The script refuses to apply if later edits conflict with the rollback.
+After reverting, open a fresh shell and restart Neovim.
+
 ## Private settings
 
 - `~/.config/zsh/local.zsh`: credentials, work helpers, and machine overrides.

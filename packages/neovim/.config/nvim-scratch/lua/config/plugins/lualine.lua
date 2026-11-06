@@ -6,7 +6,7 @@ vim.pack.add({
 local navic = require("nvim-navic")
 
 -- Keep the entire winbar steady; the mode label already identifies the mode.
-local theme = vim.deepcopy(require("lualine.themes.gruvbox"))
+local theme = vim.deepcopy(require("lualine.themes.github_dark_default"))
 for _, mode in ipairs({ "insert", "visual", "replace", "command", "terminal", "inactive" }) do
   theme[mode] = vim.deepcopy(theme.normal)
 end
