@@ -24,6 +24,24 @@ On a fresh Mac, `brew bundle --file=Brewfile` installs the tools and apps too.
 It is unnecessary on the current Mac, where WezTerm and the Meslo font were
 installed outside Homebrew and could conflict with a bundle installation.
 
+### Refresh links automatically after pulling
+
+Run once per clone, after the initial Stow setup (also in WSL):
+
+```sh
+git config --local core.hooksPath .githooks
+./scripts/restow.sh
+```
+
+Subsequent pulls that merge, fast-forward, or rebase refresh the packages already
+linked on that machine. Already-up-to-date pulls need no refresh. New files need
+links when Stow manages a directory file by file; edits to existing linked files
+appear immediately. The script checks for conflicts before changing links and
+never overwrites local files. If a conflict is reported, resolve it and rerun
+`./scripts/restow.sh`. Restart Neovim if it has cached a missing Lua module.
+
+To disable these hooks, run `git config --local --unset core.hooksPath`.
+
 ## Theme trial
 
 Neovim, its winbar, WezTerm, tmux, and Powerlevel10k use GitHub Dark Default

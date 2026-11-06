@@ -1,0 +1,3 @@
+#!/bin/sh
+# Also runs after a fast-forward pull; an already-up-to-date pull needs no work.
+exec "$(git rev-parse --show-toplevel)/scripts/restow.sh"
