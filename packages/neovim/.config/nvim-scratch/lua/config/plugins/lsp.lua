@@ -43,6 +43,17 @@ vim.lsp.config("vtsls", {
 -- rustaceanvim owns the Rust client and supplies Neotest discovery.
 vim.g.rustaceanvim = {
     server = {
+        settings = function(_, defaults)
+            local settings = vim.deepcopy(defaults)
+            -- Use the Windows target for Rust development inside WSL.
+            if vim.fn.has("wsl") == 1 then
+                settings["rust-analyzer"].cargo = {
+                    target = "x86_64-pc-windows-gnu",
+                    targetDir = "target/rust-analyzer-windows",
+                }
+            end
+            return settings
+        end,
         default_settings = {
             ["rust-analyzer"] = {
                 checkOnSave = true,
