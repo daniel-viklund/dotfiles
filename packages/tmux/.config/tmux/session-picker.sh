@@ -127,7 +127,7 @@ kill_session() { tmux kill-session -t "$1"; }
 key_action() {
   key=$1
   selected=${2:-}
-  keys='j,k,g,G,q,/,x'
+  keys='j,k,g,G,q,/,x,r,n'
   normal="change-prompt(/)+hide-input+enable-search+clear-query+search()+rebind($keys)"
   input="show-input+disable-search+unbind($keys)+change-query()"
   # fzf ignores query edits made from change events, so after a confirmation
@@ -156,7 +156,8 @@ key_action() {
 
   case "$key:$mode" in
     esc:normal) echo abort ;;
-    esc:*|enter:kill|enter:notice) echo "$normal" ;;
+    backspace:normal) ;;
+    esc:*|backspace:*|enter:kill|enter:notice) echo "$normal" ;;
     change:notice) echo "$dismiss" ;;
     enter:normal|enter:search) echo accept-non-empty ;;
     enter:new|enter:rename)
@@ -175,7 +176,7 @@ key_action() {
           echo "$dismiss+$reload" ;;
         *) echo "$dismiss" ;;
       esac ;;
-    x:normal)
+    x:normal|x:search)
       [ -n "$selected" ] || return 0
       if [ "$selected" = "${SESSION_PICKER_CURRENT:-}" ]; then
         notice "can't kill the current session"
@@ -252,13 +253,13 @@ if command -v curl >/dev/null 2>&1; then
   watcher=$!
 fi
 
-normal_keys='j,k,g,G,q,/,x'
+normal_keys='j,k,g,G,q,/,x,r,n'
 rows=$(list_sessions)
 position=$(printf '%s\n' "$rows" | awk -F '\t' -v current="${SESSION_PICKER_CURRENT:-}" '
   $1 == current { print NR; found = 1; exit }
   END { if (!found) print 1 }')
 if selection=$(printf '%s\n' "$rows" | fzf \
-  --no-sort --track --layout=reverse --info=inline-right --no-input \
+  --no-sort --track --layout=reverse-list --info=inline-right --no-input \
   --delimiter="$tab" --with-nth=2 --id-nth=1 --no-scrollbar \
   --prompt='/' --listen="$SESSION_PICKER_RUN/fzf.sock" \
   --color='bg:#0d1117,fg:#6e7681,bg+:#21262d,fg+:#e6edf3,hl:#e6edf3,hl+:#e6edf3,info:#6e7681,pointer:#e6edf3,gutter:#0d1117,border:#6e7681,prompt:#e6edf3,preview-bg:#0d1117,preview-fg:#e6edf3' \
@@ -268,11 +269,12 @@ if selection=$(printf '%s\n' "$rows" | fzf \
   --bind='j:down,k:up,g:first,G:last,q:abort' \
   --bind="/:show-input+enable-search+clear-query+unbind($normal_keys)" \
   --bind='esc:transform:sh "$TMUX_SESSION_PICKER_SCRIPT" key esc' \
+  --bind='backward-eof:transform:sh "$TMUX_SESSION_PICKER_SCRIPT" key backspace' \
   --bind='enter:transform:sh "$TMUX_SESSION_PICKER_SCRIPT" key enter {1}' \
   --bind='change:transform:sh "$TMUX_SESSION_PICKER_SCRIPT" key change' \
-  --bind='x:transform:sh "$TMUX_SESSION_PICKER_SCRIPT" key x {1}' \
-  --bind='ctrl-r:transform:sh "$TMUX_SESSION_PICKER_SCRIPT" key ctrl-r {1}' \
-  --bind='ctrl-n:transform:sh "$TMUX_SESSION_PICKER_SCRIPT" key ctrl-n' \
+  --bind='x,ctrl-x:transform:sh "$TMUX_SESSION_PICKER_SCRIPT" key x {1}' \
+  --bind='r,ctrl-r:transform:sh "$TMUX_SESSION_PICKER_SCRIPT" key ctrl-r {1}' \
+  --bind='n,ctrl-n:transform:sh "$TMUX_SESSION_PICKER_SCRIPT" key ctrl-n' \
   --bind='alt-up:reload(sh "$TMUX_SESSION_PICKER_SCRIPT" move up {1})' \
   --bind='alt-down:reload(sh "$TMUX_SESSION_PICKER_SCRIPT" move down {1})' \
   --bind='shift-up:preview-up,shift-down:preview-down' \

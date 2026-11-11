@@ -14,16 +14,19 @@ Press `Ctrl-a`, then `s`. Requires a recent `fzf` with `--id-nth` support
 | / | Start fuzzy-searching sessions |
 | Enter | Switch to the selected session |
 | Option/Alt + Up / Down | Move the selected session up / down |
-| Ctrl-N | Create a detached session, then select it in the picker |
-| Ctrl-R | Rename the selected session |
-| x | Kill the selected session; press `y` to confirm, any other key cancels |
+| n / Ctrl-N | Create a detached session, then select it in the picker |
+| r / Ctrl-R | Rename the selected session |
+| x / Ctrl-X | Kill the selected session; press `y` to confirm, any other key cancels |
 | Ctrl-F | Toggle an expanded, full-width preview |
 | Shift + Up / Down | Scroll the preview |
 | Esc | Cancel search or a prompt; close when not searching |
+| Backspace (empty input) | Cancel search or a prompt |
 | q | Close without switching (when not searching) |
 
 The picker opens in normal mode, so letters act as keys until you press `/`.
-Search, new, rename, and kill prompts all use the input line at the top: Enter
+Plain-letter keys work in normal mode; their Ctrl versions also work while
+searching.
+Search, new, rename, and kill prompts all use the input line at the bottom: Enter
 confirms (a blank name cancels), and for kills only `y` confirms. The current
 session can't be killed from the picker.
 `*` marks the current session,
