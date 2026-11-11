@@ -25,6 +25,9 @@ local function match_popup_backgrounds()
     vim.api.nvim_set_hl(0, name, highlight)
   end
 
+  -- The theme's border colors nearly match the background, hiding float edges (e.g. K hover).
+  vim.api.nvim_set_hl(0, "FloatBorder", { fg = spec.palette.fg.subtle, bg = normal.bg })
+
   -- Keep separators subtle and status-line fill on the shared background.
   for _, name in ipairs({ "WinSeparator", "VertSplit", "StatusLine", "StatusLineNC" }) do
     vim.api.nvim_set_hl(0, name, {
