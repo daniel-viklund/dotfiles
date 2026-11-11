@@ -6,13 +6,18 @@ local shell_count = 0
 local next_id = 1
 
 local function header_highlights()
-  local background = api.nvim_get_hl(0, { name = "Normal", link = false }).bg or "NONE"
+  local normal = api.nvim_get_hl(0, { name = "Normal", link = false })
+  local background = normal.bg or "NONE"
   for target, source in pairs({
     TerminalPanelBar = "WinBar",
     TerminalPanelTab = "TabLine",
     TerminalPanelTabSelected = "TabLineSel",
   }) do
     local highlight = api.nvim_get_hl(0, { name = source, link = false })
+    if target == "TerminalPanelTabSelected" then
+      highlight.fg = normal.fg
+      highlight.bold = true
+    end
     highlight.bg = background
     highlight.ctermbg = nil
     highlight.reverse = false

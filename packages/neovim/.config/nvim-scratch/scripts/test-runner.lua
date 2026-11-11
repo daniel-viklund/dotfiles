@@ -40,6 +40,16 @@ local function main()
   runner = require("config.runner")
   local panel = require("config.terminals")
 
+  -- Themes can use dark text on a bright selected tab before we blend its background.
+  api.nvim_set_hl(0, "Normal", { fg = "#e6edf3", bg = "#0d1117" })
+  api.nvim_set_hl(0, "TabLineSel", { fg = "#0d1117", bg = "#6e7681" })
+  api.nvim_exec_autocmds("ColorScheme", {})
+  local selected = api.nvim_get_hl(0, { name = "TerminalPanelTabSelected", link = false })
+  local normal = api.nvim_get_hl(0, { name = "Normal", link = false })
+  assert(selected.bg == normal.bg, "Selected terminal tab background is not blended")
+  assert(selected.fg == normal.fg and selected.fg ~= selected.bg and selected.bold,
+    "Selected terminal name is not readable and emphasized")
+
   -- The toggle creates terminal 1 on first use, then preserves its running shell.
   local toggle_all = fn.maparg([[<C-\>]], "n", false, true).callback
   assert(fn.maparg("<leader>tt", "n") == "", "Old terminal toggle is still mapped")
