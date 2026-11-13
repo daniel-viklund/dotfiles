@@ -60,13 +60,34 @@ save_order() {
   mv -f "$temporary" "$order_file"
 }
 
+# The window shown in the preview: one picked with h/l for this session if it
+# still exists, otherwise the session's active window.
+previewed_window() {
+  window_file=${SESSION_PICKER_RUN:-}/window
+  if [ -n "${SESSION_PICKER_RUN:-}" ] && [ -f "$window_file" ] &&
+    read -r saved_session saved_window < "$window_file" &&
+    [ "$saved_session" = "$1" ] &&
+    tmux list-windows -t "$1" -F '#{window_id}' | grep -Fx -- "$saved_window" >/dev/null; then
+    printf '%s\n' "$saved_window"
+  else
+    tmux display-message -p -t "$1:" '#{window_id}'
+  fi
+}
+
+cycle_window() {
+  current=$(previewed_window "$2")
+  next=$(tmux list-windows -t "$2" -F '#{window_id}' | awk -v current="$current" -v step="$1" '
+    { ids[NR] = $0; if ($0 == current) position = NR }
+    END { print ids[(position - 1 + step + NR) % NR + 1] }')
+  printf '%s %s\n' "$2" "$next" > "$SESSION_PICKER_RUN/window"
+}
+
 preview_session() {
-  tmux list-windows -t "$1" -F '#{?window_active,>, } #I: #W (#{window_panes} panes)'
-  printf '\n--- Active pane (current screen) ---\n'
-  viewport=$(tmux display-message -p -t "$1:" '#{?scroll_position,#{scroll_position},0} #{pane_height}')
+  window=$(previewed_window "$1")
+  viewport=$(tmux display-message -p -t "$window" '#{?scroll_position,#{scroll_position},0} #{pane_height}')
   start=$((0 - ${viewport% *}))
   height=${viewport#* }
-  tmux capture-pane -e -p -S "$start" -E "$((start + height - 1))" -t "$1:"
+  tmux capture-pane -e -p -S "$start" -E "$((start + height - 1))" -t "$window"
 }
 
 # Record what the preview shows so the watcher refreshes only after changes.
@@ -127,7 +148,7 @@ kill_session() { tmux kill-session -t "$1"; }
 key_action() {
   key=$1
   selected=${2:-}
-  keys='j,k,g,G,q,/,x,r,n'
+  keys='j,k,g,G,q,/,x,r,n,h,l'
   normal="change-prompt(/)+hide-input+enable-search+clear-query+search()+rebind($keys)"
   input="show-input+disable-search+unbind($keys)+change-query()"
   # fzf ignores query edits made from change events, so after a confirmation
@@ -160,6 +181,12 @@ key_action() {
     esc:*|backspace:*|enter:kill|enter:notice) echo "$normal" ;;
     change:notice) echo "$dismiss" ;;
     enter:normal|enter:search) echo accept-non-empty ;;
+    prev:normal|next:normal)
+      [ -n "$selected" ] || return 0
+      if [ "$key" = prev ]; then cycle_window -1 "$selected"; else cycle_window 1 "$selected"; fi
+      echo refresh-preview ;;
+    prev:*) echo backward-char ;;
+    next:*) echo forward-char ;;
     enter:new|enter:rename)
       [ -n "$query" ] || { echo "$normal"; return; }
       if [ "$mode" = new ]; then
@@ -253,7 +280,7 @@ if command -v curl >/dev/null 2>&1; then
   watcher=$!
 fi
 
-normal_keys='j,k,g,G,q,/,x,r,n'
+normal_keys='j,k,g,G,q,/,x,r,n,h,l'
 rows=$(list_sessions)
 position=$(printf '%s\n' "$rows" | awk -F '\t' -v current="${SESSION_PICKER_CURRENT:-}" '
   $1 == current { print NR; found = 1; exit }
@@ -275,11 +302,14 @@ if selection=$(printf '%s\n' "$rows" | fzf \
   --bind='x,ctrl-x:transform:sh "$TMUX_SESSION_PICKER_SCRIPT" key x {1}' \
   --bind='r,ctrl-r:transform:sh "$TMUX_SESSION_PICKER_SCRIPT" key ctrl-r {1}' \
   --bind='n,ctrl-n:transform:sh "$TMUX_SESSION_PICKER_SCRIPT" key ctrl-n' \
+  --bind='h,left:transform:sh "$TMUX_SESSION_PICKER_SCRIPT" key prev {1}' \
+  --bind='l,right:transform:sh "$TMUX_SESSION_PICKER_SCRIPT" key next {1}' \
   --bind='alt-up:reload(sh "$TMUX_SESSION_PICKER_SCRIPT" move up {1})' \
   --bind='alt-down:reload(sh "$TMUX_SESSION_PICKER_SCRIPT" move down {1})' \
   --bind='shift-up:preview-up,shift-down:preview-down' \
   --bind="ctrl-f:change-preview-window($stacked|$side)"); then
   selected=${selection%%"$tab"*}
+  tmux select-window -t "$(previewed_window "$selected")"
   tmux switch-client -c "$SESSION_PICKER_CLIENT" -t "$selected"
 else
   status=$?

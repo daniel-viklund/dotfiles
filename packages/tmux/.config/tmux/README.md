@@ -10,9 +10,10 @@ Press `Ctrl-a`, then `s`. Requires a recent `fzf` with `--id-nth` support
 | Key | Action |
 |---|---|
 | j / k, Up / Down | Select a session |
+| h / l, Left / Right | Preview the previous / next window of the selected session |
 | g / G | Jump to the first / last session |
 | / | Start fuzzy-searching sessions |
-| Enter | Switch to the selected session |
+| Enter | Switch to the selected session and the previewed window |
 | Option/Alt + Up / Down | Move the selected session up / down |
 | n / Ctrl-N | Create a detached session, then select it in the picker |
 | r / Ctrl-R | Rename the selected session |
@@ -42,8 +43,9 @@ see their positions. Session names and running processes are unchanged.
 
 The preview is checked every second and redrawn only when the screen changes
 (this needs `curl`; without it, the preview updates when the selection moves).
-It shows the active pane's current screen
+It shows the current screen of the previewed window's active pane
 in color, including full-screen apps and the current copy-mode view, rather than
-old scrollback. It starts at the bottom; use Shift-Up/Down to scroll. This is a
+old scrollback. It starts with the session's active window and has no header
+listing windows. It starts at the bottom; use Shift-Up/Down to scroll. This is a
 read-only text view, not an interactive or scaled image of the whole window:
 wide screens are clipped horizontally, and other split panes are not shown.

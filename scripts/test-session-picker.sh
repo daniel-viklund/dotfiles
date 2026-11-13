@@ -55,7 +55,10 @@ fi
 sh "$picker" new delta
 delta=$(tmux display-message -p -t '=delta:' '#{session_id}')
 assert_order "$beta $alpha $gamma $delta"
-sh "$picker" preview "$beta" | grep -F 'Active pane' >/dev/null
+if sh "$picker" preview "$beta" | grep -E 'Active pane|panes\)' >/dev/null; then
+  echo "Preview should show only the pane screen" >&2
+  exit 1
+fi
 
 # x asks before killing a session; any answer but y cancels, and the current
 # session is protected.
@@ -70,6 +73,27 @@ assert_order "$beta $alpha $gamma"
 FZF_PROMPT='new › ' FZF_QUERY=delta sh "$picker" key enter | grep -F 'pos(4)' >/dev/null
 delta=$(tmux display-message -p -t '=delta:' '#{session_id}')
 FZF_PROMPT='new › ' FZF_QUERY=delta sh "$picker" key enter | grep -F 'duplicate session' >/dev/null
+
+# h/l pick which window the preview shows, wrapping around; in prompts the
+# arrow keys move the cursor instead.
+tmux new-window -d -t "$delta:" -n second 'printf SECOND_WINDOW; sleep 300'
+attempt=0
+while ! tmux capture-pane -p -t "$delta:second" | grep -F 'SECOND_WINDOW' >/dev/null; do
+  attempt=$((attempt + 1))
+  [ "$attempt" -lt 50 ] || { printf 'Window fixture timed out\n' >&2; exit 1; }
+  sleep 0.1
+done
+shows_second() { sh "$picker" preview "$1" | grep -F 'SECOND_WINDOW' >/dev/null; }
+if shows_second "$delta"; then echo "Unexpected window in $delta preview" >&2; exit 1; fi
+FZF_INPUT_STATE=hidden sh "$picker" key next "$delta" | grep -Fx refresh-preview >/dev/null
+shows_second "$delta"
+FZF_INPUT_STATE=hidden sh "$picker" key next "$delta" >/dev/null
+if shows_second "$delta"; then echo "Unexpected window in $delta preview" >&2; exit 1; fi
+FZF_INPUT_STATE=hidden sh "$picker" key prev "$delta" >/dev/null
+shows_second "$delta"
+if shows_second "$beta"; then echo "Unexpected window in $beta preview" >&2; exit 1; fi
+FZF_PROMPT=/ sh "$picker" key prev "$delta" | grep -Fx backward-char >/dev/null
+tmux kill-window -t "$delta:second"
 rm -rf "$SESSION_PICKER_RUN"
 unset SESSION_PICKER_RUN
 assert_order "$beta $alpha $gamma $delta"
